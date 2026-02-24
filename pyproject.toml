@@ -1,0 +1,27 @@
+[project]
+name = "optimal-market-maker-exchange-contract-drl"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "chrisdybdahl",email = "chrisdybdahl@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11,<3.15"
+dependencies = [
+    "ipykernel (>=7.2.0,<8.0.0)",
+    "numpy (>=2.4.2,<3.0.0)",
+    "matplotlib (>=3.10.8,<4.0.0)",
+    "torch (>=2.10.0,<3.0.0)"
+]
+
+[tool.poetry]
+packages = [{include = "optimal_market_maker_exchange_contract_drl", from = "src"}]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "ruff (>=0.15.2,<0.16.0)"
+]
