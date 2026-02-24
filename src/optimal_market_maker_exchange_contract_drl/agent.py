@@ -1,47 +1,61 @@
-from typing import Tuple
-
 import numpy as np
+import torch
 
-from .functions import Lam
+from .functions import compute_lam_base
 
 
 class MarketMaker:
-    def __init__(self, market_maker_cfg, V_l: np.array, V_d: np.array):
-        self.q_bar = market_maker_cfg["q_bar"]  # Single side risk limit
+    def __init__(
+        self,
+        intensity_params,
+        market_maker_cfg,
+        V_l: np.array,
+        V_d: np.array,
+        device: torch.device,
+        dtype: torch.dtype = torch.float32,
+    ):
+        self.intensity_params = intensity_params  # Intensity
+        self.q_bar = torch.tensor(
+            market_maker_cfg["q_bar"], device=device, dtype=dtype
+        )  # Single side risk limit
+        self.V_l = torch.from_numpy(V_l).to(
+            device=device, dtype=dtype
+        )  # Valid volumes in lit pool
+        self.V_d = torch.from_numpy(V_d).to(
+            device=device, dtype=dtype
+        )  # Valid volumes in dark pool
+        self.B = market_maker_cfg["batch_size"]
+        self.device = device
+        self.dtype = dtype
 
-        # Intensity
-        self.lam = Lam(
-            A=market_maker_cfg["A"],
-            theta=market_maker_cfg["theta"],
-            sigma=market_maker_cfg["sigma"],
-            epsilon=market_maker_cfg["epsilon"],
+        # Initialize inventory
+        self.Q = torch.zeros(self.B, device=device, dtype=dtype)  # (B)
+
+        # Counts N^{i, j, k}
+        self.N_l = torch.zeros(
+            self.B, 2, self.V_l.numel(), device=device, dtype=torch.int64
+        )
+        self.N_d = torch.zeros(
+            self.B, 2, self.V_d.numel(), device=device, dtype=torch.int64
         )
 
-        # Filled trades
-        self.V_l = V_l  # Valid volumes in lit pool
-        self.V_d = V_d  # Valid volumes in dark pool
-        self.N_a_l = np.zeros_like(V_l)  # Filled ask trades in lit pool
-        self.N_b_l = np.zeros_like(V_l)  # Filled buy trades in lit  pool
-        self.N_a_d = np.zeros_like(V_d)  # Filled ask trades in dark pool
-        self.N_b_d = np.zeros_like(V_d)  # Filled buy trades in dark pool
+        # Current posted volumes
+        self.ell_idx = torch.zeros(
+            self.B, 2, 2, device=device, dtype=torch.int64
+        )  # (B, 2, 2)
+        self.ell_val = torch.zeros(
+            self.B, 2, 2, device=device, dtype=dtype
+        )  # (B, 2, 2)
 
-    def get_Q(self):
-        # Aggregated sum of volumes filled
-        return (self.V_l @ self.N_b_l - self.V_l @ self.N_a_l) + (
-            self.V_d @ self.N_b_d - self.V_d @ self.N_a_d
-        )
+        # Phi(i) for vectorized operations
+        self.phi = torch.tensor([1.0, -1.0], device=device, dtype=dtype).view(1, 2)
 
-    def lam(self, i: str, j: str, L_l: Tuple[float, float]):
-        # Intensity of processes N^{i, j ,k}
-        def theta(i):
-            if i == "a":
-                return 1
-            elif i == "b":
-                return 0
-            else:
-                raise ValueError(f"Invalid input: i = {i}")
+    def lam_base(self) -> torch.Tensor:
+        ell_l = self.ell_val[:, :, 0]  # (B, 2)
+        return compute_lam_base(ell_l, self.intensity_params)
 
-        if (theta(i) * self.get_Q() > -self.q_bar) and ():
-            return self.lam.eval(i, j, L_l)
-        else:
-            return 0
+    def lam_eff(self) -> torch.Tensor:
+        lam = self.lam_base()
+
+        inv_mask = (self.phi * self.Q.view(self.B, 1)) > (-self.q_bar)  # (B, 2)
+        return lam * inv_mask[:, :, None].to(lam.dtype)

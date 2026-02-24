@@ -1,63 +1,62 @@
+from dataclasses import dataclass
 from typing import Tuple
 
-import numpy as np
+import torch
 
 
-def imbalance_a(L_l: Tuple[float, float]):
-    # Imbalance on ask side of lit pool
-    l_a_l, l_b_l = L_l
-    return l_a_l / (l_a_l + l_b_l)
+@dataclass(frozen=True)
+def IntensityParams():
+    A: torch.Tensor
+    c: torch.Tensor
+    eps: torch.Tensor
 
 
-def imbalance_b(L_l: Tuple[float, float]):
-    # Imbalance on buy side of lit pool
-    l_a_l, l_b_l = L_l
-    return l_b_l / (l_a_l + l_b_l)
+def make_intensity_params(
+    A_l: float,
+    A_d: float,
+    theta_l: float,
+    theta_d: float,
+    sigma: float,
+    eps: float,
+    device: torch.device,
+    dtype: torch.dtype = torch.float32,
+) -> IntensityParams:
+    A = torch.tensor([A_l, A_d], device=device, dtype=dtype)
+    c = torch.tensor([theta_l / sigma, theta_d / sigma], device=device, dtype=dtype)
+    eps = torch.tensor(eps, device=device, dtype=dtype)
+    return IntensityParams(A=A, c=c, eps=eps)
 
 
-def imbalance(i: str, j: str, L_l: Tuple[float, float]):
-    # Imbalance wrapper function
-    if (i == "a" and j == "l") or (i == "b" and j == "d"):
-        return imbalance_a(L_l)
-    elif (i == "b" and j == "l") or (i == "a" and j == "d"):
-        return imbalance_b(L_l)
-    else:
-        raise ValueError(f"Invalid input: i = {i}, j = {j}")
+def compute_imbalance(ell_l: torch.tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    ell_a = ell_l[..., 0]
+    ell_b = ell_l[..., 1]
+    den = (ell_a + ell_b).clamp_min(1e-12)
+
+    return ell_a / den, ell_b / den
 
 
-class Lam:
-    # Class to save coefficients and to evaluate intensities of processes
-    def __init__(self, A: dict, theta: dict, sigma: float, epsilon: float):
-        self.A = A
-        self.theta = theta
-        self.sigma = sigma
-        self.epsilon = epsilon
+def compute_psi(ell_l: torch.tensor) -> torch.Tensor:
+    I_a, I_b = compute_imbalance(ell_l)
 
-    def eval(self, i: str, j: str, L_l: Tuple[float, float]):
-        l_a_l, l_b_l = L_l
-        if l_a_l != 0 and l_b_l != 0:
-            return self.A[j] * np.exp(
-                -(self.theta[j] / self.sigma) * imbalance(i, j, L_l)
-            )
-        else:
-            return self.epsilon
+    psi = torch.empty((*ell_l.shape[:-1], 2, 2), device=ell_l.device, dtype=ell_l.dtype)
+    psi[..., 0, 0] = I_a  # (a, l)
+    psi[..., 1, 0] = I_b  # (b, l)
+    psi[..., 0, 1] = I_b  # (a, d)
+    psi[..., 1, 1] = I_a  # (b, d)
+
+    return psi
 
 
-def phi_lat(k):
-    # TODO: Optimise structure for performance, but keep currently for clarity
-    if k == "lat":
-        return 1
-    elif k == "non-lat":
-        return 0
-    else:
-        raise ValueError(f"Invalid input: k = {k}")
+def compute_lam_base(
+    ell_l: torch.Tensor, intensity_params: IntensityParams
+) -> torch.Tensor:
+    psi = compute_psi(ell_l)  # (B, 2, 2)
 
+    A = intensity_params.A.view(1, 1, 2)
+    c = intensity_params.c.view(1, 1, 2)
 
-def phi_d(i, k):
-    # TODO: Optimise structure for performance, but keep currently for clarity
-    if (i == "a" and k == "lat") or (i == "b" and k == "non-lat"):
-        return 1
-    elif (i == "a" and k == "non-lat") or (i == "b" and k == "lat"):
-        return 0
-    else:
-        raise ValueError(f"Invalid input: k = {k}, i = {i}")
+    lam_temp = A * torch.exp(-c * psi)  # (B , 2, 2)
+
+    ell_nonzero = (ell_l[:, 0] + ell_l[:, 1]) > 0
+    lam_base = torch.where(ell_nonzero[:, None, None], lam_temp, intensity_params.eps)
+    return lam_base
