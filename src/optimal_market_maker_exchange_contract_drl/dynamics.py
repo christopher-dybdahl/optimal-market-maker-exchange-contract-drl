@@ -11,6 +11,7 @@ class MarketParams:
     Gamma: torch.Tensor  # (2, )
     half_tick: torch.Tensor  # scalar
     sigma: torch.Tensor  # scalar
+    S_tilde_0: float  # scalar
     V_l: torch.Tensor  # (#V_l, )
     V_d: torch.Tensor  # (#V_d, )
     tick_size: torch.Tensor  # scalar
@@ -26,6 +27,7 @@ def make_market_params(
     theta_d: float,
     tick_size: float,
     sigma: float,
+    S_tilde_0: float,
     V_l: np.array,
     V_d: np.array,
     eps: float,
@@ -47,9 +49,10 @@ def make_market_params(
         Gamma=Gamma,
         half_tick=half_tick,
         sigma=sigma,
+        S_tilde_0=S_tilde_0,
+        tick_size=tick_size,
         V_l=V_l,
         V_d=V_d,
-        tick_size=tick_size,
         eps=eps,
     )
 
@@ -71,14 +74,11 @@ class Market:
         self.market_params = market_params
 
         # Price states
-        self.S_tilde_0 = market_cfg[
-            "S_tilde_0"
-        ]  # Initial unaffected mid-price of underlying asset
         self.S_tilde = torch.full(
-            (self.B,), self.S_tilde_0, device=device, dtype=dtype
+            (self.B,), self.market_params.S_tilde_0, device=device, dtype=dtype
         )  # (B, ) Current unaffected mid-price of underlying asset
         self.S = torch.full(
-            (self.B,), self.S_tilde_0, device=device, dtype=dtype
+            (self.B,), self.market_params.S_tilde_0, device=device, dtype=dtype
         )  # (B, ) Current mid-price of underlying asset
         self.P_l = torch.full(
             (self.B, 2),
@@ -92,10 +92,14 @@ class Market:
         self.P_d = torch.zeros(
             (self.B, 2, 2), device=device, dtype=dtype
         )  # (B, 2, 2) Current market price of underlying asset on dark pool
-        self.P_d[..., 0, 0] = self.S_tilde_0 + self.market_params.half_tick  # (a, lat)
-        self.P_d[..., 1, 0] = self.S_tilde_0 - self.market_params.half_tick  # (b, lat)
-        self.P_d[..., 0, 1] = self.S_tilde_0  # (a, non-lat)
-        self.P_d[..., 1, 1] = self.S_tilde_0  # (b, non-lat)
+        self.P_d[..., 0, 0] = (
+            self.market_params.S_tilde_0 + self.market_params.half_tick
+        )  # (a, lat)
+        self.P_d[..., 1, 0] = (
+            self.market_params.S_tilde_0 - self.market_params.half_tick
+        )  # (b, lat)
+        self.P_d[..., 0, 1] = self.market_params.S_tilde_0  # (a, non-lat)
+        self.P_d[..., 1, 1] = self.market_params.S_tilde_0  # (b, non-lat)
 
         # Stochastic increments
         self.dW = torch.zeros(

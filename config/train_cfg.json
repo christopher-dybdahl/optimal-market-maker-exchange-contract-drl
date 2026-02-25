@@ -1,0 +1,5 @@
+{
+  "device": "cpu",
+  "batch_size": 256,
+  "save_dir": null
+}

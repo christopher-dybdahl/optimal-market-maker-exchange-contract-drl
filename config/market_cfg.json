@@ -1,0 +1,14 @@
+{
+    "A_l": 5.0e3,
+    "A_d": 3.0e3,
+    "Gamma_l": 1.0e-4,
+    "Gamma_d": 5.0e-5,
+    "theta_l": 0.15,
+    "theta_d": 0.15,
+    "tick_size": "NA",
+    "sigma": 0.1,
+    "S_tilde_0": "NA",
+    "V_l": "NA",
+    "V_d": "NA",
+    "eps": 1.0e-12
+}
