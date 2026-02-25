@@ -14,6 +14,11 @@ class MarketMaker:
         device: torch.device,
         dtype: torch.dtype = torch.float32,
     ):
+        # Training params
+        self.B = market_maker_cfg["batch_size"]
+        self.device = device
+        self.dtype = dtype
+
         # Market params
         self.market_params = market_params
         self.V_l = torch.from_numpy(V_l).to(
@@ -31,36 +36,33 @@ class MarketMaker:
             market_maker_cfg["q_bar"], device=device, dtype=dtype
         )  # Single side risk limit
 
-        # Training params
-        self.B = market_maker_cfg["batch_size"]
-        self.device = device
-        self.dtype = dtype
-
         # Initialize inventory
-        self.Q = torch.zeros(self.B, device=device, dtype=dtype)  # (B)
+        self.Q = torch.zeros((self.B,), device=device, dtype=dtype)  # (B)
 
-        # Counts N^{i, j, k}
+        # Counts per volume N^{i, k}
         self.N_l = torch.zeros(
-            self.B, 2, self.V_l.numel(), device=device, dtype=torch.int64
+            (self.B, 2, self.V_l.numel()), device=device, dtype=torch.int64
         )  # (B, 2, #V_l)
         self.N_d = torch.zeros(
-            self.B, 2, self.V_d.numel(), device=device, dtype=torch.int64
+            (self.B, 2, self.V_d.numel()), device=device, dtype=torch.int64
         )  # (B, 2, #V_d)
 
-        # Aggregated counts N^{i, j}
-        self.N_l_agg = torch.zeros(
-            self.B, 2, 2, device=device, dtype=torch.int64
-        )  # (B, 2, 2)
+        # Aggregated counts latency/non-latency N^{i, lat/non-lat}
         self.N_d_agg = torch.zeros(
-            self.B, 2, 2, device=device, dtype=torch.int64
+            (self.B, 2, 2), device=device, dtype=torch.int64
+        )  # (B, 2, 2)
+
+        # Aggregated counts N^{i, j}
+        self.N_agg = torch.zeros(
+            (self.B, 2), device=device, dtype=torch.int64
         )  # (B, 2, 2)
 
         # Current posted volumes
         self.ell_idx = torch.zeros(
-            self.B, 2, 2, device=device, dtype=torch.int64
+            (self.B, 2, 2), device=device, dtype=torch.int64
         )  # (B, 2, 2)
         self.ell_val = torch.zeros(
-            self.B, 2, 2, device=device, dtype=dtype
+            (self.B, 2, 2), device=device, dtype=dtype
         )  # (B, 2, 2)
 
         # Phi(i) for vectorized operations
@@ -75,3 +77,15 @@ class MarketMaker:
 
         inv_mask = (self.phi * self.Q.view(self.B, 1)) > (-self.q_bar)  # (B, 2)
         return lam * inv_mask[:, :, None].to(lam.dtype)
+
+    def update_state(self, v: torch.Tensor):
+        # TODO: Implement update of
+        # self.N_l
+        # self.N_d
+        # self.N_d_lat_agg
+        # self.N_d_non_agg
+        # self.N_l_agg
+        # self.N_d_agg
+        # self.ell_idx
+        # self.ell_val
+        pass

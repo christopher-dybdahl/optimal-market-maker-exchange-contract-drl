@@ -9,6 +9,7 @@ def MarketParams():
     A: torch.Tensor  # (2)
     c: torch.Tensor  # (2)
     Gamma: torch.Tensor  # (2)
+    half_tick: torch.Tensor  # scalar
     sigma: torch.Tensor  # scalar
     tick_size: torch.Tensor  # scalar
     eps: torch.Tensor  # scalar
@@ -30,11 +31,18 @@ def make_market_params(
     A = torch.tensor([A_l, A_d], device=device, dtype=dtype)
     c = torch.tensor([theta_l / sigma, theta_d / sigma], device=device, dtype=dtype)
     Gamma = torch.tensor([Gamma_l, Gamma_d], device=device, dtype=dtype)
+    half_tick = torch.tensor(tick_size / 2, device=device, dtype=dtype)
     sigma = torch.tensor(sigma, device=device, dtype=dtype)
     tick_size = torch.tensor(tick_size, device=device, dtype=dtype)
     eps = torch.tensor(eps, device=device, dtype=dtype)
     return MarketParams(
-        A=A, c=c, Gamma=Gamma, sigma=sigma, tick_size=tick_size, eps=eps
+        A=A,
+        c=c,
+        Gamma=Gamma,
+        half_tick=half_tick,
+        sigma=sigma,
+        tick_size=tick_size,
+        eps=eps,
     )
 
 
