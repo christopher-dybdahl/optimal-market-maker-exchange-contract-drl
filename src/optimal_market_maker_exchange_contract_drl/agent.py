@@ -1,16 +1,13 @@
-import numpy as np
 import torch
 
-from .functions import compute_lam_base
+from .dynamics import Market
 
 
 class MarketMaker:
     def __init__(
         self,
-        market_params,
-        market_maker_cfg,
-        V_l: np.array,
-        V_d: np.array,
+        market: Market,
+        market_maker_cfg: dict,
         device: torch.device,
         dtype: torch.dtype = torch.float32,
     ):
@@ -19,14 +16,11 @@ class MarketMaker:
         self.device = device
         self.dtype = dtype
 
+        # Market object
+        self.market = market
+
         # Market params
-        self.market_params = market_params
-        self.V_l = torch.from_numpy(V_l).to(
-            device=device, dtype=dtype
-        )  # Valid volumes in lit pool
-        self.V_d = torch.from_numpy(V_d).to(
-            device=device, dtype=dtype
-        )  # Valid volumes in dark pool
+        self.market_params = self.market.market_params
 
         # Market Maker params
         self.gamma = torch.tensor(
@@ -37,14 +31,18 @@ class MarketMaker:
         )  # Single side risk limit
 
         # Initialize inventory
-        self.Q = torch.zeros((self.B,), device=device, dtype=dtype)  # (B)
+        self.Q = torch.zeros((self.B,), device=device, dtype=dtype)  # (B, )
 
         # Counts per volume N^{i, k}
         self.N_l = torch.zeros(
-            (self.B, 2, self.V_l.numel()), device=device, dtype=torch.int64
+            (self.B, 2, self.market_params.V_l.numel()),
+            device=device,
+            dtype=torch.int64,
         )  # (B, 2, #V_l)
         self.N_d = torch.zeros(
-            (self.B, 2, self.V_d.numel()), device=device, dtype=torch.int64
+            (self.B, 2, self.market_params.V_d.numel()),
+            device=device,
+            dtype=torch.int64,
         )  # (B, 2, #V_d)
 
         # Aggregated counts latency/non-latency N^{i, lat/non-lat}
@@ -65,20 +63,13 @@ class MarketMaker:
             (self.B, 2, 2), device=device, dtype=dtype
         )  # (B, 2, 2)
 
-        # Phi(i) for vectorized operations
-        self.phi = torch.tensor([1.0, -1.0], device=device, dtype=dtype).view(1, 2)
-
-    def lam_base(self) -> torch.Tensor:
-        ell_l = self.ell_val[:, :, 0]  # (B, 2)
-        return compute_lam_base(ell_l, self.market_params)
-
     def lam_eff(self) -> torch.Tensor:
-        lam = self.lam_base()
+        lam = self.market.lam_base(self.ell_val[:, :, 0])
 
-        inv_mask = (self.phi * self.Q.view(self.B, 1)) > (-self.q_bar)  # (B, 2)
+        inv_mask = (self.market.phi * self.Q.view(self.B, 1)) > (-self.q_bar)  # (B, 2)
         return lam * inv_mask[:, :, None].to(lam.dtype)
 
-    def update_state(self, v: torch.Tensor):
+    def update_state(self, v: torch.Tensor) -> None:
         # TODO: Implement update of
         # self.N_l
         # self.N_d
@@ -88,4 +79,5 @@ class MarketMaker:
         # self.N_d_agg
         # self.ell_idx
         # self.ell_val
+        # self.Q
         pass
