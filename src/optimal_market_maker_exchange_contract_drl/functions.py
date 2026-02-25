@@ -5,26 +5,32 @@ import torch
 
 
 @dataclass(frozen=True)
-def IntensityParams():
+def MarketParams():
     A: torch.Tensor
     c: torch.Tensor
     eps: torch.Tensor
 
 
-def make_intensity_params(
+def make_market_params(
     A_l: float,
     A_d: float,
+    Gamma_l: float,
+    Gamma_d: float,
     theta_l: float,
     theta_d: float,
+    tick_size: float,
     sigma: float,
     eps: float,
     device: torch.device,
     dtype: torch.dtype = torch.float32,
-) -> IntensityParams:
+) -> MarketParams:
     A = torch.tensor([A_l, A_d], device=device, dtype=dtype)
     c = torch.tensor([theta_l / sigma, theta_d / sigma], device=device, dtype=dtype)
+    Gamma = torch.tensor([Gamma_l, Gamma_d], device=device, dtype=dtype)
+    sigma = torch.tensor(sigma, device=device, dtype=dtype)
+    tick_size = torch.tensor(tick_size, device=device, dtype=dtype)
     eps = torch.tensor(eps, device=device, dtype=dtype)
-    return IntensityParams(A=A, c=c, eps=eps)
+    return MarketParams(A=A, c=c, eps=eps)
 
 
 def compute_imbalance(ell_l: torch.tensor) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -47,16 +53,14 @@ def compute_psi(ell_l: torch.tensor) -> torch.Tensor:
     return psi
 
 
-def compute_lam_base(
-    ell_l: torch.Tensor, intensity_params: IntensityParams
-) -> torch.Tensor:
+def compute_lam_base(ell_l: torch.Tensor, market_params: MarketParams) -> torch.Tensor:
     psi = compute_psi(ell_l)  # (B, 2, 2)
 
-    A = intensity_params.A.view(1, 1, 2)
-    c = intensity_params.c.view(1, 1, 2)
+    A = market_params.A.view(1, 1, 2)
+    c = market_params.c.view(1, 1, 2)
 
     lam_temp = A * torch.exp(-c * psi)  # (B , 2, 2)
 
     ell_nonzero = (ell_l[:, 0] + ell_l[:, 1]) > 0
-    lam_base = torch.where(ell_nonzero[:, None, None], lam_temp, intensity_params.eps)
+    lam_base = torch.where(ell_nonzero[:, None, None], lam_temp, market_params.eps)
     return lam_base

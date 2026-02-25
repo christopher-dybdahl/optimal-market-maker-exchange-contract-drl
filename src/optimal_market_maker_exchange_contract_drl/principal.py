@@ -4,11 +4,11 @@ import torch
 from .functions import compute_lam_base
 
 
-class MarketMaker:
+class Exchange:
     def __init__(
         self,
         market_params,
-        market_maker_cfg,
+        exchange_cfg,
         V_l: np.array,
         V_d: np.array,
         device: torch.device,
@@ -23,16 +23,13 @@ class MarketMaker:
             device=device, dtype=dtype
         )  # Valid volumes in dark pool
 
-        # Market Maker params
-        self.gamma = torch.tensor(
-            market_maker_cfg["gamma"], device=device, dtype=dtype
+        # Exchange params
+        self.eta = torch.tensor(
+            exchange_cfg["eta"], device=device, dtype=dtype
         )  # Risk aversion parameter
-        self.q_bar = torch.tensor(
-            market_maker_cfg["q_bar"], device=device, dtype=dtype
-        )  # Single side risk limit
 
         # Training params
-        self.B = market_maker_cfg["batch_size"]
+        self.B = exchange_cfg["batch_size"]
         self.device = device
         self.dtype = dtype
 
