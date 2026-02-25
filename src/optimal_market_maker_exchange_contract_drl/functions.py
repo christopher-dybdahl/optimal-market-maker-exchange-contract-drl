@@ -6,9 +6,12 @@ import torch
 
 @dataclass(frozen=True)
 def MarketParams():
-    A: torch.Tensor
-    c: torch.Tensor
-    eps: torch.Tensor
+    A: torch.Tensor  # (2)
+    c: torch.Tensor  # (2)
+    Gamma: torch.Tensor  # (2)
+    sigma: torch.Tensor  # scalar
+    tick_size: torch.Tensor  # scalar
+    eps: torch.Tensor  # scalar
 
 
 def make_market_params(
@@ -30,7 +33,9 @@ def make_market_params(
     sigma = torch.tensor(sigma, device=device, dtype=dtype)
     tick_size = torch.tensor(tick_size, device=device, dtype=dtype)
     eps = torch.tensor(eps, device=device, dtype=dtype)
-    return MarketParams(A=A, c=c, eps=eps)
+    return MarketParams(
+        A=A, c=c, Gamma=Gamma, sigma=sigma, tick_size=tick_size, eps=eps
+    )
 
 
 def compute_imbalance(ell_l: torch.tensor) -> Tuple[torch.Tensor, torch.Tensor]:

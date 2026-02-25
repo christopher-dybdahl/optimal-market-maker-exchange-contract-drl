@@ -42,10 +42,18 @@ class MarketMaker:
         # Counts N^{i, j, k}
         self.N_l = torch.zeros(
             self.B, 2, self.V_l.numel(), device=device, dtype=torch.int64
-        )
+        )  # (B, 2, #V_l)
         self.N_d = torch.zeros(
             self.B, 2, self.V_d.numel(), device=device, dtype=torch.int64
-        )
+        )  # (B, 2, #V_d)
+
+        # Aggregated counts N^{i, j}
+        self.N_l_agg = torch.zeros(
+            self.B, 2, 2, device=device, dtype=torch.int64
+        )  # (B, 2, 2)
+        self.N_d_agg = torch.zeros(
+            self.B, 2, 2, device=device, dtype=torch.int64
+        )  # (B, 2, 2)
 
         # Current posted volumes
         self.ell_idx = torch.zeros(
