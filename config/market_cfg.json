@@ -5,10 +5,10 @@
     "Gamma_d": 5.0e-5,
     "theta_l": 0.15,
     "theta_d": 0.15,
-    "tick_size": null,
+    "tick_size": 1,
     "sigma": 0.1,
-    "S_tilde_0": null,
-    "V_l": null,
-    "V_d": null,
+    "S_tilde_0": 100,
+    "V_l": [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+    "V_d": [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
     "eps": 1.0e-12
 }

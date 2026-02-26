@@ -7,13 +7,14 @@ class MarketMaker:
     def __init__(
         self,
         market: Market,
-        market_maker_cfg: dict,
+        mm_cfg: dict,
         device: torch.device,
+        batch_size: int,
         dtype: torch.dtype = torch.float32,
     ):
         # Training params
-        self.B = market_maker_cfg["batch_size"]
         self.device = device
+        self.B = batch_size
         self.dtype = dtype
 
         # Market object
@@ -24,10 +25,10 @@ class MarketMaker:
 
         # Market Maker params
         self.gamma = torch.tensor(
-            market_maker_cfg["gamma"], device=device, dtype=dtype
+            mm_cfg["gamma"], device=device, dtype=dtype
         )  # Risk aversion parameter
         self.q_bar = torch.tensor(
-            market_maker_cfg["q_bar"], device=device, dtype=dtype
+            mm_cfg["q_bar"], device=device, dtype=dtype
         )  # Single side risk limit
 
         # Initialize inventory

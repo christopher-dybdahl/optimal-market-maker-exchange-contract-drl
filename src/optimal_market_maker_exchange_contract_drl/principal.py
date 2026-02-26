@@ -9,11 +9,12 @@ class Exchange:
         market: Market,
         exchange_cfg: dict,
         device: torch.device,
+        batch_size: int,
         dtype: torch.dtype = torch.float32,
     ):
         # Training params
-        self.B = exchange_cfg["batch_size"]
         self.device = device
+        self.B = batch_size
         self.dtype = dtype
 
         # Market object

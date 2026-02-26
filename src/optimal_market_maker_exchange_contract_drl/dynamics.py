@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-import numpy as np
 import torch
 
 
@@ -28,8 +27,8 @@ def make_market_params(
     tick_size: float,
     sigma: float,
     S_tilde_0: float,
-    V_l: np.array,
-    V_d: np.array,
+    V_l: list,
+    V_d: list,
     eps: float,
     device: torch.device,
     dtype: torch.dtype = torch.float32,
@@ -39,8 +38,8 @@ def make_market_params(
     Gamma = torch.tensor([Gamma_l, Gamma_d], device=device, dtype=dtype)
     half_tick = torch.tensor(tick_size * 0.5, device=device, dtype=dtype)
     sigma = torch.tensor(sigma, device=device, dtype=dtype)
-    V_l = torch.from_numpy(V_l).to(device=device, dtype=dtype)
-    V_d = torch.from_numpy(V_d).to(device=device, dtype=dtype)
+    V_l = torch.tensor(V_l, device=device, dtype=dtype)
+    V_d = torch.tensor(V_d, device=device, dtype=dtype)
     tick_size = torch.tensor(tick_size, device=device, dtype=dtype)
     eps = torch.tensor(eps, device=device, dtype=dtype)
     return MarketParams(
@@ -61,13 +60,13 @@ class Market:
     def __init__(
         self,
         market_params: MarketParams,
-        market_cfg: dict,
         device: torch.device,
+        batch_size: int,
         dtype: torch.dtype = torch.float32,
     ):
         # Training params
-        self.B = market_cfg["batch_size"]
         self.device = device
+        self.B = batch_size
         self.dtype = dtype
 
         # Market params
@@ -80,16 +79,14 @@ class Market:
         self.S = torch.full(
             (self.B,), self.market_params.S_tilde_0, device=device, dtype=dtype
         )  # (B, ) Current mid-price of underlying asset
-        self.P_l = torch.full(
+        self.P_l = torch.empty(
             (self.B, 2),
-            [
-                self.S_tilde_0 + self.market_params.tick_size,
-                self.S_tilde_0 - self.market_params.tick_size,
-            ],
             device=device,
             dtype=dtype,
         )  # (B, 2) Current market price of underlying asset on lit pool
-        self.P_d = torch.zeros(
+        self.P_l[:, 0] = self.market_params.S_tilde_0 + self.market_params.tick_size
+        self.P_l[:, 1] = self.market_params.S_tilde_0 - self.market_params.tick_size
+        self.P_d = torch.empty(
             (self.B, 2, 2), device=device, dtype=dtype
         )  # (B, 2, 2) Current market price of underlying asset on dark pool
         self.P_d[..., 0, 0] = (
