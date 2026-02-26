@@ -1,13 +1,17 @@
 import logging
-import os
+from pathlib import Path
 
 
 class Logger:
-    def __init__(self, save_dir, verbose=True, filename="training.log", overwrite=True):
+    def __init__(
+        self,
+        save_dir: Path,
+        filename: str = "training.log",
+        verbose: bool = True,
+        overwrite: bool = True,
+    ):
         self.verbose = verbose
-        self.log_path = os.path.join(save_dir, filename)
-
-        os.makedirs(save_dir, exist_ok=True)
+        self.log_path = save_dir / filename
 
         # Determine file mode based on overwrite parameter
         filemode = "w" if overwrite else "a"

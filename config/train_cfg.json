@@ -1,5 +1,8 @@
 {
   "device": "cpu",
   "batch_size": 256,
-  "save_dir": null
+  "model_name": null,
+  "verbose": true,
+  "train": true,
+  "load_if_exists": true
 }
