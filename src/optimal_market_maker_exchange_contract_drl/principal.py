@@ -27,3 +27,7 @@ class Exchange:
         self.eta = torch.tensor(
             exchange_cfg["eta"], device=device, dtype=dtype
         )  # Risk aversion parameter
+        # TODO: Check if dimension for following tensor is correct
+        self.c = torch.tensor(
+            [exchange_cfg["c_l"], exchange_cfg["c_d"]], device=device, dtype=dtype
+        )  # (2, ) Fixed fees for each market order
