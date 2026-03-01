@@ -10,7 +10,6 @@ from optimal_market_maker_exchange_contract_drl import (
     Logger,
     Market,
     MarketMaker,
-    make_market_params,
 )
 
 
@@ -85,29 +84,23 @@ def main():
         logger.log(f"Error loading market config: {e}")
         raise LookupError
 
-    market_params = make_market_params(**market_cfg, device=device)
+    market = Market(**market_cfg, batch_size=args.batch_size, dtype=torch.float32)
+    market.to(device=device)
 
     # fmt: off
     logger.log("Market params:")
-    logger.log(f"  A (limit, dark)    : {market_params.A.tolist()}")
-    logger.log(f"  c (theta/sigma)    : {market_params.c.tolist()}")
-    logger.log(f"  Gamma (limit, dark): {market_params.Gamma.tolist()}")
-    logger.log(f"  sigma              : {market_params.sigma.item():.6g}")
-    logger.log(f"  tick_size          : {market_params.tick_size.item():.6g}")
-    logger.log(f"  half_tick          : {market_params.half_tick.item():.6g}")
-    logger.log(f"  S_tilde_0          : {market_params.S_tilde_0}")
-    logger.log(f"  V_l                : {market_params.V_l.tolist()}")
-    logger.log(f"  V_d                : {market_params.V_d.tolist()}")
-    logger.log(f"  eps                : {market_params.eps.item():.6g}")
+    logger.log(f"  A (lit, dark)      : {market.A.tolist()}")
+    logger.log(f"  c (theta/sigma)    : {market.c.tolist()}")
+    logger.log(f"  Gamma (lit, dark)  : {market.Gamma.tolist()}")
+    logger.log(f"  sigma              : {market.sigma.item():.6g}")
+    logger.log(f"  tick_size          : {market.tick_size.item():.6g}")
+    logger.log(f"  half_tick          : {market.half_tick.item():.6g}")
+    logger.log(f"  S_tilde_0          : {market.S_tilde_0}")
+    logger.log(f"  V_l                : {market.V_l.tolist()}")
+    logger.log(f"  V_d                : {market.V_d.tolist()}")
+    logger.log(f"  eps                : {market.eps.item():.6g}")
     logger.log("=" * 70)
     # fmt: on
-
-    market = Market(
-        market_params=market_params,
-        device=device,
-        batch_size=args.batch_size,
-        dtype=torch.float32,
-    )
 
     # Retrieve market maker config and initialise market maker object
     try:
@@ -127,10 +120,10 @@ def main():
     mm = MarketMaker(
         market=market,
         mm_cfg=mm_cfg,
-        device=device,
         batch_size=args.batch_size,
         dtype=torch.float32,
-    )
+    ).to(device=device)
+    mm.reset_state()
 
     # Save configs
     train_cfg_path = save_dir / "train_cfg.json"
