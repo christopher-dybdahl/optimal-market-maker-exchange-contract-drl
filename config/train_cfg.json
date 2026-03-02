@@ -8,6 +8,6 @@
   "epochs": 1000,
   "lr": 1e-3,
   "z_bar": 2.0,
-  "save_per": 50,
-  "log_per": 10
+  "save_per": 200,
+  "log_per": 100
 }

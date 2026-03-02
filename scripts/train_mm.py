@@ -64,6 +64,7 @@ def main():
 
     # Log run configuration
     # fmt: off
+    logger.log("=" * 70)
     logger.log("Run configuration")
     logger.log(f"  device        : {args.device}")
     logger.log(f"  batch_size    : {args.batch_size}")
