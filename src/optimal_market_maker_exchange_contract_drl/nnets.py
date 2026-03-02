@@ -27,7 +27,7 @@ class FCnet(nn.Module):
             mods.append(act())
 
         mods.append(nn.Linear(layers[-2], layers[-1]))
-        mods.append(nn.Sigmoid)
+        mods.append(nn.Sigmoid())
 
         self.net = nn.Sequential(*mods)
 

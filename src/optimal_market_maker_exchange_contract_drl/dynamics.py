@@ -27,15 +27,15 @@ class Market(nn.Module):
 
         # fmt: off
         # Fixed market parameters
-        self.register_buffer("A",         torch.tensor([A_l, A_d],                        dtype=dtype))  # (2,)
+        self.register_buffer("A",         torch.tensor([A_l, A_d],                         dtype=dtype))  # (2,)
         self.register_buffer("c",         torch.tensor([theta_l / sigma, theta_d / sigma], dtype=dtype))  # (2,)  theta^j / sigma
-        self.register_buffer("Gamma",     torch.tensor([Gamma_l, Gamma_d],                dtype=dtype))  # (2,)
-        self.register_buffer("half_tick", torch.tensor(tick_size * 0.5,                   dtype=dtype))  # scalar  T/2
-        self.register_buffer("sigma",     torch.tensor(sigma,                             dtype=dtype))  # scalar
-        self.register_buffer("tick_size", torch.tensor(tick_size,                         dtype=dtype))  # scalar
-        self.register_buffer("V_l",       torch.tensor(V_l,                               dtype=dtype))  # (#V_l,)
-        self.register_buffer("V_d",       torch.tensor(V_d,                               dtype=dtype))  # (#V_d,)
-        self.register_buffer("eps",       torch.tensor(eps,                               dtype=dtype))  # scalar
+        self.register_buffer("Gamma",     torch.tensor([Gamma_l, Gamma_d],                 dtype=dtype))  # (2,)
+        self.register_buffer("half_tick", torch.tensor(tick_size * 0.5,                    dtype=dtype))  # scalar  T/2
+        self.register_buffer("sigma",     torch.tensor(sigma,                              dtype=dtype))  # scalar
+        self.register_buffer("tick_size", torch.tensor(tick_size,                          dtype=dtype))  # scalar
+        self.register_buffer("V_l",       torch.tensor(V_l,                                dtype=dtype))  # (#V_l,)
+        self.register_buffer("V_d",       torch.tensor(V_d,                                dtype=dtype))  # (#V_d,)
+        self.register_buffer("eps",       torch.tensor(eps,                                dtype=dtype))  # scalar
 
         # Vectorised sign constants
         self.register_buffer("phi",     torch.tensor([1.0, -1.0], dtype=dtype).view(1, 2))       # (1, 2)   phi(a)=1, phi(b)=-1

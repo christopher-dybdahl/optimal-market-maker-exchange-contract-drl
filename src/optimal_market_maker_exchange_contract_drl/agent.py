@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from .dynamics import Market
 from .nnets import FCnet
@@ -106,7 +107,7 @@ class MarketMaker(nn.Module):
         # reset episode state on the right device
         self.reset_state()
 
-    def lam_eff(self, ell: torch.Tensor) -> torch.Tensor:
+    def _lam_eff(self, ell: torch.Tensor) -> torch.Tensor:
         lam = self.market.lam_base(ell[:, :, 0])  # (B, 2, 2) [side={a, b}, pool={l, d}]
         inv_mask = (self.market.phi * self.Q.view(self.B, 1)) > (-self.q_bar)  # (B, 2)
         lam = lam * inv_mask[:, :, None].to(lam.dtype)  # (B, 2, 2)
@@ -139,8 +140,72 @@ class MarketMaker(nn.Module):
         )  # (B, 2, 3)
 
         return (1.0 / self.gamma) * (
-            (1.0 - torch.exp(-self.gamma * arg)) * self.lam_eff(ell)
+            (1.0 - torch.exp(-self.gamma * arg)) * self._lam_eff(ell)
         ).sum(dim=(1, 2))  # (B,)
+
+    def _pack_z(self, z4: torch.Tensor) -> torch.Tensor:
+        """
+        z4: (B, 4) = [z^{a,l}, z^{b,l}, z^{a,d}, z^{b,d}]
+        returns z: (B, 2, 2) with axes [side={a,b}, pool={l,d}]
+        """
+        z_al = z4[:, 0]
+        z_bl = z4[:, 1]
+        z_ad = z4[:, 2]
+        z_bd = z4[:, 3]
+        return torch.stack(
+            [
+                torch.stack([z_al, z_ad], dim=-1),
+                torch.stack([z_bl, z_bd], dim=-1),
+            ],
+            dim=1,
+        )  # (B, 2, 2)
+
+    def _pack_ell(self, ell4: torch.Tensor) -> torch.Tensor:
+        """
+        ell4: (B, 4) = [ell^{a,l}, ell^{b,l}, ell^{a,d}, ell^{b,d}]
+        returns ell: (B, 2, 2) with axes [side={a,b}, pool={l,d}]
+        """
+        ell_al = ell4[:, 0]
+        ell_bl = ell4[:, 1]
+        ell_ad = ell4[:, 2]
+        ell_bd = ell4[:, 3]
+        return torch.stack(
+            [
+                torch.stack([ell_al, ell_ad], dim=-1),
+                torch.stack([ell_bl, ell_bd], dim=-1),
+            ],
+            dim=1,
+        )  # (B, 2, 2)
+
+    def _nn_input(
+        self, z4: torch.Tensor, q: torch.Tensor, z_bar: torch.Tensor
+    ) -> torch.Tensor:
+        """
+        Normalize inputs:
+          z in [-z_bar, z_bar]^4 -> z/z_bar
+          q in [-q_bar, q_bar]   -> q/q_bar
+        returns y: (B, 5)
+        """
+        zn = z4 / z_bar
+        qn = q / self.q_bar
+        return torch.cat([zn, qn[:, None]], dim=1)
+
+    def _inventory_penalty(self, ell: torch.Tensor, q: torch.Tensor) -> torch.Tensor:
+        """
+        Penalty from the paper:
+
+          (q + ell^{b,l} + ell^{b,d} - q_bar)_+
+        + (q - ell^{a,l} - ell^{a,d} + q_bar)_-
+
+        Implement (x)_+ = relu(x), (x)_- = relu(-x)
+        Returns: (B,)
+        """
+        ell_b_sum = ell[:, 1, 0] + ell[:, 1, 1]
+        ell_a_sum = ell[:, 0, 0] + ell[:, 0, 1]
+
+        t_plus = F.relu(q + ell_b_sum - self.q_bar)
+        t_minus = F.relu(-(q - ell_a_sum + self.q_bar))
+        return t_plus + t_minus
 
     def update_state(self, v: torch.Tensor) -> None:
         # TODO: Implement update of
