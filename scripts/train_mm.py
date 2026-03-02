@@ -1,3 +1,4 @@
+import glob
 import json
 import os
 from argparse import ArgumentParser
@@ -27,12 +28,17 @@ def main():
     # fmt: off
     train_cfg = load_train_cfg(path=CONFIG_DIR / "train_cfg.json")
     parser = ArgumentParser()
-    parser.add_argument("--device", type=str, default=train_cfg["device"], help="Device to use for training (cpu or cuda)")
-    parser.add_argument("--batch_size", type=int, default=train_cfg["batch_size"], help="Batch size")
-    parser.add_argument("--model_name", type=str, default=train_cfg["model_name"], help="Prefix of model save directory")
-    parser.add_argument("--verbose", action="store_true", default=train_cfg["verbose"], help="Print training progress")
-    parser.add_argument("--train", action="store_true", default=train_cfg["train"], help="Train the model")
-    parser.add_argument("--load_if_exists", action="store_true", default=train_cfg["load_if_exists"], help="Load model if it exists")
+    parser.add_argument("--device",        type=str,   default=train_cfg["device"],        help="Device to use for training (cpu or cuda)")
+    parser.add_argument("--batch_size",    type=int,   default=train_cfg["batch_size"],    help="Batch size")
+    parser.add_argument("--model_name",    type=str,   default=train_cfg["model_name"],    help="Prefix of model save directory")
+    parser.add_argument("--verbose",       action="store_true", default=train_cfg["verbose"], help="Print training progress")
+    parser.add_argument("--train",         action="store_true", default=train_cfg["train"],   help="Train the model")
+    parser.add_argument("--load_if_exists",action="store_true", default=train_cfg["load_if_exists"], help="Load model if it exists")
+    parser.add_argument("--epochs",        type=int,   default=train_cfg["epochs"],        help="Number of epochs to train")
+    parser.add_argument("--lr",            type=float, default=train_cfg["lr"],            help="Adam learning rate")
+    parser.add_argument("--z_bar",         type=float, default=train_cfg["z_bar"],         help="Half-range for uniform z sampling")
+    parser.add_argument("--save_per",      type=int,   default=train_cfg["save_per"],      help="Save checkpoint every N epochs")
+    parser.add_argument("--log_per",       type=int,   default=train_cfg["log_per"],       help="Log loss every N epochs")
     args = parser.parse_args()
     # fmt: on
 
@@ -59,11 +65,16 @@ def main():
     # Log run configuration
     # fmt: off
     logger.log("Run configuration")
-    logger.log(f"  device      : {args.device}")
-    logger.log(f"  batch_size  : {args.batch_size}")
-    logger.log(f"  model_name  : {args.model_name!r}")
-    logger.log(f"  train       : {args.train}")
-    logger.log(f"  load_if_exists: {args.load_if_exists} ({'will attempt to load saved configs' if args.load_if_exists else 'will use configs from config/'})")
+    logger.log(f"  device        : {args.device}")
+    logger.log(f"  batch_size    : {args.batch_size}")
+    logger.log(f"  model_name    : {args.model_name!r}")
+    logger.log(f"  train         : {args.train}")
+    logger.log(f"  load_if_exists: {args.load_if_exists} ({'will attempt to load latest checkpoint' if args.load_if_exists else 'will start from scratch'})")
+    logger.log(f"  epochs        : {args.epochs}")
+    logger.log(f"  lr            : {args.lr}")
+    logger.log(f"  z_bar         : {args.z_bar}")
+    logger.log(f"  save_per      : {args.save_per}")
+    logger.log(f"  log_per       : {args.log_per}")
     logger.log("=" * 70)
     # fmt: on
 
@@ -125,6 +136,30 @@ def main():
     ).to(device=device)
     mm.reset_state()
 
+    # Locate latest checkpoint (highest epoch number) if load_if_exists
+    start_epoch = 1
+    optimizer_state = None
+    ckpt_pattern = str(save_dir / "checkpoint_epoch_*.pt")
+    existing_ckpts = sorted(
+        glob.glob(ckpt_pattern),
+        key=lambda p: int(Path(p).stem.replace("checkpoint_epoch_", "")),
+    )
+
+    if args.load_if_exists and existing_ckpts:
+        latest_ckpt = Path(existing_ckpts[-1])
+        logger.log(f"Loading checkpoint: {latest_ckpt}")
+        epochs_trained, optimizer_state = mm.load(path=latest_ckpt, device=device)
+        start_epoch = epochs_trained + 1
+        logger.log(
+            f"Resuming from epoch {start_epoch} (previously trained for {epochs_trained} epochs)"
+        )
+    else:
+        if args.load_if_exists:
+            logger.log("No existing checkpoint found - starting from scratch")
+        else:
+            logger.log("load_if_exists=False - starting from scratch")
+    logger.log("=" * 70)
+
     # Save configs
     train_cfg_path = save_dir / "train_cfg.json"
     market_cfg_path = save_dir / "market_cfg.json"
@@ -144,7 +179,18 @@ def main():
     ######################
 
     if args.train:
-        logger.log("Train")
+        logger.log("Training")
+        mm.fit(
+            z_bar=args.z_bar,
+            epochs=args.epochs,
+            lr=args.lr,
+            save_dir=save_dir,
+            save_per=args.save_per,
+            log_per=args.log_per,
+            logger=logger,
+            start_epoch=start_epoch,
+            optimizer_state=optimizer_state,
+        )
 
 
 if __name__ == "__main__":

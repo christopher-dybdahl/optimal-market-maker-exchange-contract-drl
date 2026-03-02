@@ -19,6 +19,8 @@ class FCnet(nn.Module):
     ):
         super().__init__()
 
+        self.q_bar = q_bar
+
         act = _ACTS[activation.lower()]
 
         mods: list[nn.Module] = []
