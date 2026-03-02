@@ -97,6 +97,7 @@ class MarketMaker(nn.Module):
         path: str,
         epochs_trained: int,
         optimizer: torch.optim.Optimizer = None,
+        losses: list[float] = None,
     ) -> None:
         ckpt = {
             "mm_state_dict": self.state_dict(),
@@ -105,17 +106,20 @@ class MarketMaker(nn.Module):
             "optimizer_state_dict": optimizer.state_dict()
             if optimizer is not None
             else None,
+            "losses": losses if losses is not None else [],
         }
         torch.save(ckpt, path)
 
-    def load(self, path: str, device: torch.device) -> tuple[int, dict | None]:
+    def load(
+        self, path: str, device: torch.device
+    ) -> tuple[int, dict | None, list[float]]:
         """
         Load model weights and training state from a checkpoint.
 
         Returns:
-            (epochs_trained, optimizer_state_dict) — pass the latter to
-            train(..., optimizer_state=optimizer_state_dict) to resume
-            optimizer momentum/state correctly.
+            (epochs_trained, optimizer_state_dict, losses) — pass the latter two to
+            fit(..., optimizer_state=optimizer_state_dict, prior_losses=losses)
+            to resume training correctly.
         """
         ckpt = torch.load(path, map_location="cpu")
 
@@ -128,7 +132,22 @@ class MarketMaker(nn.Module):
         # reset episode state on the right device
         self.reset_state()
 
-        return ckpt.get("epochs_trained", 0), ckpt.get("optimizer_state_dict", None)
+        return (
+            ckpt.get("epochs_trained", 0),
+            ckpt.get("optimizer_state_dict", None),
+            ckpt.get("losses", []),
+        )
+
+    def _lam_eff_c(self, ell: torch.Tensor) -> torch.Tensor:
+        lam = self.market.lam_base(ell[:, :, 0])  # (B, 2, 2) [side={a, b}, pool={l, d}]
+
+        # phi^d(i, kappa)
+        phi_d = self.market.phi_d(
+            ell[:, :, 0]
+        )  # (B, 2, 2) [side={a, b}, kappa={lat, non}]
+
+        # Expand to (B, 2, 3): [lam_l, lam_d * phi_d_lat, lam_d * phi_d_non]
+        return torch.cat([lam[:, :, 0:1], lam[:, :, 1:2] * phi_d], dim=2)  # (B, 2, 3)
 
     def _lam_eff(self, ell: torch.Tensor) -> torch.Tensor:
         lam = self.market.lam_base(ell[:, :, 0])  # (B, 2, 2) [side={a, b}, pool={l, d}]
@@ -163,7 +182,7 @@ class MarketMaker(nn.Module):
         )  # (B, 2, 3)
 
         return (1.0 / self.gamma) * (
-            (1.0 - torch.exp(-self.gamma * arg)) * self._lam_eff(ell)
+            (1.0 - torch.exp(-self.gamma * arg)) * self._lam_eff_c(ell)
         ).sum(dim=(1, 2))  # (B,)
 
     def _pack_z(self, z4: torch.Tensor) -> torch.Tensor:
@@ -242,6 +261,7 @@ class MarketMaker(nn.Module):
         logger: Logger = None,
         start_epoch: int = 1,
         optimizer_state: dict = None,
+        prior_losses: list[float] = None,
     ) -> list[float]:
         """
         Train the market maker policy network.
@@ -281,7 +301,7 @@ class MarketMaker(nn.Module):
             opt.load_state_dict(optimizer_state)
 
         final_epoch = start_epoch + epochs - 1
-        losses: list[float] = []
+        losses: list[float] = list(prior_losses) if prior_losses else []
 
         def _log(msg: str) -> None:
             if logger is not None:
@@ -323,7 +343,9 @@ class MarketMaker(nn.Module):
 
             if save_dir is not None and (epoch % save_per == 0 or epoch == final_epoch):
                 ckpt_path = save_dir / f"checkpoint_epoch_{epoch}.pt"
-                self.save(path=ckpt_path, epochs_trained=epoch, optimizer=opt)
+                self.save(
+                    path=ckpt_path, epochs_trained=epoch, optimizer=opt, losses=losses
+                )
                 _log(f"  Checkpoint saved -> {ckpt_path}")
 
         _log(

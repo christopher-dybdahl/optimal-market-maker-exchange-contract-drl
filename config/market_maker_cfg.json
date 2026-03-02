@@ -1,6 +1,6 @@
 {
   "gamma": 0.01,
-  "q_bar": 150,
+  "q_bar": 300,
   "rho": 0.1,
   "architecture": "fc",
   "layers": [5, 10, 10, 4],

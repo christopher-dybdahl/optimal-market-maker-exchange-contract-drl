@@ -5,6 +5,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 import torch
+from plotting import plot_controls, plot_loss
 from utils import load_cfg, load_train_cfg
 
 from optimal_market_maker_exchange_contract_drl import (
@@ -39,6 +40,9 @@ def main():
     parser.add_argument("--z_bar",         type=float, default=train_cfg["z_bar"],         help="Half-range for uniform z sampling")
     parser.add_argument("--save_per",      type=int,   default=train_cfg["save_per"],      help="Save checkpoint every N epochs")
     parser.add_argument("--log_per",       type=int,   default=train_cfg["log_per"],       help="Log loss every N epochs")
+    parser.add_argument("--plot",          action="store_true", default=train_cfg["plot"], help="Plot controls of the trained model")
+    parser.add_argument("--plot_q",        type=float, default=train_cfg["plot_q"],        help="q for plot")
+    parser.add_argument("--plot_z_d",      type=float, default=train_cfg["plot_z_d"],      help="z_a_d = z_b_d for plot")
     args = parser.parse_args()
     # fmt: on
 
@@ -140,6 +144,7 @@ def main():
     # Locate latest checkpoint (highest epoch number) if load_if_exists
     start_epoch = 1
     optimizer_state = None
+    prior_losses = []
     ckpt_pattern = str(save_dir / "checkpoint_epoch_*.pt")
     existing_ckpts = sorted(
         glob.glob(ckpt_pattern),
@@ -149,7 +154,9 @@ def main():
     if args.load_if_exists and existing_ckpts:
         latest_ckpt = Path(existing_ckpts[-1])
         logger.log(f"Loading checkpoint: {latest_ckpt}")
-        epochs_trained, optimizer_state = mm.load(path=latest_ckpt, device=device)
+        epochs_trained, optimizer_state, prior_losses = mm.load(
+            path=latest_ckpt, device=device
+        )
         start_epoch = epochs_trained + 1
         logger.log(
             f"Resuming from epoch {start_epoch} (previously trained for {epochs_trained} epochs)"
@@ -181,7 +188,7 @@ def main():
 
     if args.train:
         logger.log("Training")
-        mm.fit(
+        all_losses = mm.fit(
             z_bar=args.z_bar,
             epochs=args.epochs,
             lr=args.lr,
@@ -191,7 +198,32 @@ def main():
             logger=logger,
             start_epoch=start_epoch,
             optimizer_state=optimizer_state,
+            prior_losses=prior_losses,
         )
+    else:
+        all_losses = prior_losses
+
+    ######################
+    ###### PLOTTING ######
+    ######################
+
+    if args.plot:
+        fig_path = save_dir / f"controls_{args.z_bar}_{args.plot_z_d}_{args.plot_q}.png"
+        fig = plot_controls(
+            mm=mm,
+            z_bar=args.z_bar,
+            plot_z_d=args.plot_z_d,
+            plot_q=args.plot_q,
+            save_path=fig_path,
+        )
+        logger.log(f"Controls plot saved to {fig_path}")
+        fig.show()
+
+        if all_losses:
+            loss_fig_path = save_dir / "loss.png"
+            loss_fig = plot_loss(losses=all_losses, save_path=loss_fig_path)
+            logger.log(f"Loss plot saved to {loss_fig_path}")
+            loss_fig.show()
 
 
 if __name__ == "__main__":
