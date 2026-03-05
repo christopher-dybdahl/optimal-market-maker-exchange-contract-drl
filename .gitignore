@@ -1,3 +1,6 @@
 .vscode/settings.json
 __pycache__/
-saved_models/*
+saved_models/market_maker/*
+!saved_models/market_maker/keep/
+saved_models/exchange/*
+!saved_models/exchange/keep/
