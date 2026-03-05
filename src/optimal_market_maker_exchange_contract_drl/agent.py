@@ -46,13 +46,6 @@ class MarketMaker(nn.Module):
             * torch.tensor([1.0, 1.0, 0.0], dtype=dtype).view(1, 1, 3),
         )  # (1, 1, 3)  half_tick * phi_lat(kappa) per channel
 
-        # Episode state — None until reset_state() is called
-        self.register_buffer("Q", None)  # (B,)
-        self.register_buffer("N_l", None)  # (B, 2, #V_l)
-        self.register_buffer("N_d", None)  # (B, 2, #V_d)
-        self.register_buffer("N_d_agg", None)  # (B, 2, 2) [side, kappa={lat,non}]
-        self.register_buffer("N_agg", None)  # (B, 2)   [side, pool={l,d}]
-
         # Initialise neural network
         if self.mm_cfg["architecture"] == "fc":
             self.net = FCnet(
@@ -62,35 +55,6 @@ class MarketMaker(nn.Module):
             )
         else:
             raise ValueError
-
-    def reset_state(self) -> None:
-        device = self.gamma.device
-        dtype = self.gamma.dtype
-
-        # Initialize inventory
-        self.Q = torch.zeros((self.B,), device=device, dtype=dtype)  # (B, )
-
-        # Counts per volume N^{i, k}
-        self.N_l = torch.zeros(
-            (self.B, 2, self.market.V_l.numel()),
-            device=device,
-            dtype=torch.int64,
-        )  # (B, 2, #V_l)
-        self.N_d = torch.zeros(
-            (self.B, 2, self.market.V_d.numel()),
-            device=device,
-            dtype=torch.int64,
-        )  # (B, 2, #V_d)
-
-        # Aggregated counts latency/non-latency N^{i, lat/non-lat}
-        self.N_d_agg = torch.zeros(
-            (self.B, 2, 2), device=device, dtype=torch.int64
-        )  # (B, 2, 2) [side={a, b}, kappa={lat, non}]
-
-        # Aggregated counts N^{i, j}
-        self.N_agg = torch.zeros(
-            (self.B, 2), device=device, dtype=torch.int64
-        )  # (B, 2, 2) [side={a, b}, pool={l, d}]
 
     def save(
         self,
@@ -129,9 +93,6 @@ class MarketMaker(nn.Module):
         self.to(device=device, dtype=dtype)
         self.load_state_dict(ckpt["mm_state_dict"])
 
-        # reset episode state on the right device
-        self.reset_state()
-
         return (
             ckpt.get("epochs_trained", 0),
             ckpt.get("optimizer_state_dict", None),
@@ -150,6 +111,8 @@ class MarketMaker(nn.Module):
         return torch.cat([lam[:, :, 0:1], lam[:, :, 1:2] * phi_d], dim=2)  # (B, 2, 3)
 
     def _lam_eff(self, ell: torch.Tensor) -> torch.Tensor:
+        raise NotImplementedError
+
         lam = self.market.lam_base(ell[:, :, 0])  # (B, 2, 2) [side={a, b}, pool={l, d}]
         inv_mask = (self.market.phi * self.Q.view(self.B, 1)) > (-self.q_bar)  # (B, 2)
         lam = lam * inv_mask[:, :, None].to(lam.dtype)  # (B, 2, 2)
@@ -355,17 +318,3 @@ class MarketMaker(nn.Module):
         )
 
         return losses
-
-    def update_state(self, v: torch.Tensor) -> None:
-        # TODO: Implement update of
-        # self.N_l
-        # self.N_d
-        # self.N_d_lat_agg
-        # self.N_d_non_agg
-        # self.N_l_agg
-        # self.N_d_agg
-        # self.Q
-        pass
-
-    def post_liquidity(self) -> None:
-        pass

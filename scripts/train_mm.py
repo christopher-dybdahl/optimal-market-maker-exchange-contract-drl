@@ -5,13 +5,13 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 import torch
-from plotting import plot_controls, plot_loss
 from utils import load_cfg, load_train_cfg
 
 from optimal_market_maker_exchange_contract_drl import (
     Logger,
     Market,
     MarketMaker,
+    plot_loss,
 )
 
 
@@ -40,9 +40,6 @@ def main():
     parser.add_argument("--z_bar",         type=float, default=train_cfg["z_bar"],         help="Half-range for uniform z sampling")
     parser.add_argument("--save_per",      type=int,   default=train_cfg["save_per"],      help="Save checkpoint every N epochs")
     parser.add_argument("--log_per",       type=int,   default=train_cfg["log_per"],       help="Log loss every N epochs")
-    parser.add_argument("--plot",          action="store_true", default=train_cfg["plot"], help="Plot controls of the trained model")
-    parser.add_argument("--plot_q",        type=float, default=train_cfg["plot_q"],        help="q for plot")
-    parser.add_argument("--plot_z_d",      type=float, default=train_cfg["plot_z_d"],      help="z_a_d = z_b_d for plot")
     args = parser.parse_args()
     # fmt: on
 
@@ -111,9 +108,6 @@ def main():
     logger.log(f"  sigma              : {market.sigma.item():.6g}")
     logger.log(f"  tick_size          : {market.tick_size.item():.6g}")
     logger.log(f"  half_tick          : {market.half_tick.item():.6g}")
-    logger.log(f"  S_tilde_0          : {market.S_tilde_0}")
-    logger.log(f"  V_l                : {market.V_l.tolist()}")
-    logger.log(f"  V_d                : {market.V_d.tolist()}")
     logger.log(f"  eps                : {market.eps.item():.6g}")
     logger.log("=" * 70)
     # fmt: on
@@ -139,7 +133,6 @@ def main():
         batch_size=args.batch_size,
         dtype=torch.float32,
     ).to(device=device)
-    mm.reset_state()
 
     # Locate latest checkpoint (highest epoch number) if load_if_exists
     start_epoch = 1
@@ -207,23 +200,11 @@ def main():
     ###### PLOTTING ######
     ######################
 
-    if args.plot:
-        fig_path = save_dir / f"controls_{args.z_bar}_{args.plot_z_d}_{args.plot_q}.png"
-        fig = plot_controls(
-            mm=mm,
-            z_bar=args.z_bar,
-            plot_z_d=args.plot_z_d,
-            plot_q=args.plot_q,
-            save_path=fig_path,
-        )
-        logger.log(f"Controls plot saved to {fig_path}")
-        fig.show()
-
-        if all_losses:
-            loss_fig_path = save_dir / "loss.png"
-            loss_fig = plot_loss(losses=all_losses, save_path=loss_fig_path)
-            logger.log(f"Loss plot saved to {loss_fig_path}")
-            loss_fig.show()
+    if all_losses:
+        loss_fig_path = save_dir / "loss.png"
+        loss_fig = plot_loss(losses=all_losses, save_path=loss_fig_path)
+        logger.log(f"Loss plot saved to {loss_fig_path}")
+        loss_fig.show()
 
 
 if __name__ == "__main__":

@@ -1,16 +1,13 @@
 {
   "device": "cpu",
-  "batch_size": 1024,
+  "batch_size": 1028,
   "model_name": null,
   "verbose": true,
   "train": false,
   "load_if_exists": true,
-  "epochs": 10000,
-  "lr": 1e-5,
+  "epochs": 100000,
+  "lr": 1e-4,
   "z_bar": 2.0,
-  "save_per": 1000,
-  "log_per": 100,
-  "plot": true,
-  "plot_q": 150,
-  "plot_z_d": 0.05
+  "save_per": 10000,
+  "log_per": 1000
 }
