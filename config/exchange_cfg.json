@@ -1,5 +1,15 @@
 {
-  "gamma": 0.02,
+  "eta": 0.02,
   "c_l": 0.05,
-  "c_d": 0.01
+  "c_d": 0.01,
+  "T": 1.0,
+  "N": 10,
+  "actor_architecture": "fc",
+  "actor_layers": [1, 20, 20, 4],
+  "actor_activation": "elu",
+  "actor_output_activation": "tanh",
+  "critic_architecture": "fc",
+  "critic_layers": [1, 20, 20, 1],
+  "critic_activation": "elu",
+  "critic_output_activation": "affine"
 }

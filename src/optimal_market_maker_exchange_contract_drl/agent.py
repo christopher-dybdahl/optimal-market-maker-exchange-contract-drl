@@ -52,9 +52,9 @@ class MarketMaker(nn.Module):
         # Initialise neural network
         if self.mm_cfg["architecture"] == "fc":
             self.net = FCnet(
-                q_bar=self.q_bar,
                 layers=self.mm_cfg["layers"],
                 activation=self.mm_cfg["activation"],
+                output_activation=self.mm_cfg["output_activation"],
             )
         else:
             raise ValueError
@@ -209,7 +209,7 @@ class MarketMaker(nn.Module):
                   each in [0, q_bar]
         """
         y = self._nn_input(z4=z4, q=q)
-        return self.net(y)
+        return self.net(y) * self.q_bar
 
     def _inventory_penalty(self, ell: torch.Tensor, q: torch.Tensor) -> torch.Tensor:
         """
