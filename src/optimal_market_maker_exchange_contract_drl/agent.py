@@ -34,6 +34,9 @@ class MarketMaker(nn.Module):
         self.register_buffer(
             "q_bar", torch.tensor(self.mm_cfg["q_bar"], dtype=dtype)
         )  # Single side risk limit
+        self.register_buffer(
+            "z_bar", torch.tensor(self.mm_cfg["z_bar"], dtype=dtype)
+        )  # Half-range for z normalisation
 
         # Pre-computed (1, 1, 3) broadcast constants for channels {l, d_lat, d_non}
         self.register_buffer(
@@ -91,7 +94,7 @@ class MarketMaker(nn.Module):
         dtype = getattr(torch, dtype_str)
 
         self.to(device=device, dtype=dtype)
-        self.load_state_dict(ckpt["mm_state_dict"])
+        missing, _ = self.load_state_dict(ckpt["mm_state_dict"], strict=False)
 
         return (
             ckpt.get("epochs_trained", 0),
@@ -182,18 +185,31 @@ class MarketMaker(nn.Module):
             dim=1,
         )  # (B, 2, 2)
 
-    def _nn_input(
-        self, z4: torch.Tensor, q: torch.Tensor, z_bar: float
-    ) -> torch.Tensor:
+    def _nn_input(self, z4: torch.Tensor, q: torch.Tensor) -> torch.Tensor:
         """
         Normalize inputs:
           z in [-z_bar, z_bar]^4 -> z/z_bar
           q in [-q_bar, q_bar]   -> q/q_bar
         returns y: (B, 5)
         """
-        zn = z4 / z_bar
+        zn = z4 / self.z_bar
         qn = q / self.q_bar
         return torch.cat([zn, qn[:, None]], dim=1)
+
+    def controls(self, z4: torch.Tensor, q: torch.Tensor) -> torch.Tensor:
+        """
+        Map state (z4, q) to optimal volumes via the policy network.
+
+        Args:
+            z4: (B, 4) incentives [z^{a,l}, z^{b,l}, z^{a,d}, z^{b,d}]
+            q:  (B,)   inventory
+
+        Returns:
+            ell4: (B, 4) volumes [ell^{a,l}, ell^{b,l}, ell^{a,d}, ell^{b,d}]
+                  each in [0, q_bar]
+        """
+        y = self._nn_input(z4=z4, q=q)
+        return self.net(y)
 
     def _inventory_penalty(self, ell: torch.Tensor, q: torch.Tensor) -> torch.Tensor:
         """
@@ -214,7 +230,6 @@ class MarketMaker(nn.Module):
 
     def fit(
         self,
-        z_bar: float,
         epochs: int,
         lr: float,
         seed: int = None,
@@ -238,7 +253,6 @@ class MarketMaker(nn.Module):
         used everywhere else in the simulation.
 
         Args:
-            z_bar:           half-range for uniform z sampling
             epochs:          number of epochs to run in this call
             lr:              Adam learning rate
             seed:            optional RNG seed for reproducibility
@@ -280,10 +294,9 @@ class MarketMaker(nn.Module):
             # Sample z ~ Uniform([-z_bar, z_bar]^4)
             z4 = (
                 2.0 * torch.rand((self.B, 4), device=device, dtype=dtype) - 1.0
-            ) * z_bar
+            ) * self.z_bar
 
-            y = self._nn_input(z4=z4, q=q, z_bar=z_bar)  # (B, 5)
-            ell4 = self.net(y)  # (B, 4)
+            ell4 = self.controls(z4=z4, q=q)  # (B, 4)
             ell = self._pack_ell(ell4)  # (B, 2, 2)
             z = self._pack_z(z4)  # (B, 2, 2)
 

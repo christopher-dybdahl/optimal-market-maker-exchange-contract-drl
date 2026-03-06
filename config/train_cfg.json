@@ -7,7 +7,6 @@
   "load_if_exists": true,
   "epochs": 100000,
   "lr": 1e-4,
-  "z_bar": 2.0,
   "save_per": 10000,
   "log_per": 1000
 }

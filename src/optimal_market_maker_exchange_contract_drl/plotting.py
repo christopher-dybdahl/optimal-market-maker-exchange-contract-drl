@@ -7,7 +7,6 @@ import torch
 
 def plot_controls(
     mm,
-    z_bar: float,
     plot_z_d: float,
     plot_q: float,
     n_points: int = 400,
@@ -25,8 +24,7 @@ def plot_controls(
         q                = plot_q               (fixed)
 
     Args:
-        mm:         trained MarketMaker (nn.Module)
-        z_bar:      half-range used during training
+        mm:         trained MarketMaker
         plot_q:     inventory value to hold fixed
         plot_z_d:   dark-pool z value to hold fixed for both sides
         n_points:   number of points along the sweep
@@ -37,6 +35,7 @@ def plot_controls(
     """
     device = mm.gamma.device
     dtype = mm.gamma.dtype
+    z_bar = mm.z_bar.item()
 
     was_training = mm.training
     mm.eval()
@@ -50,8 +49,7 @@ def plot_controls(
         # z4: (N, 4) = [z^{a,l}, z^{b,l}, z^{a,d}, z^{b,d}]
         z4 = torch.stack([t, -t, z_d, z_d], dim=1)  # (N, 4)
 
-        y = mm._nn_input(z4=z4, q=q, z_bar=z_bar)  # (N, 5)
-        ell4 = mm.net(y).cpu().numpy()  # (N, 4)
+        ell4 = mm.controls(z4=z4, q=q).cpu().numpy()  # (N, 4)
 
     if was_training:
         mm.train()

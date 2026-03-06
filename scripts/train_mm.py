@@ -37,7 +37,6 @@ def main():
     parser.add_argument("--load_if_exists",action="store_true", default=train_cfg["load_if_exists"], help="Load model if it exists")
     parser.add_argument("--epochs",        type=int,   default=train_cfg["epochs"],        help="Number of epochs to train")
     parser.add_argument("--lr",            type=float, default=train_cfg["lr"],            help="Adam learning rate")
-    parser.add_argument("--z_bar",         type=float, default=train_cfg["z_bar"],         help="Half-range for uniform z sampling")
     parser.add_argument("--save_per",      type=int,   default=train_cfg["save_per"],      help="Save checkpoint every N epochs")
     parser.add_argument("--log_per",       type=int,   default=train_cfg["log_per"],       help="Log loss every N epochs")
     args = parser.parse_args()
@@ -74,7 +73,6 @@ def main():
     logger.log(f"  load_if_exists: {args.load_if_exists} ({'will attempt to load latest checkpoint' if args.load_if_exists else 'will start from scratch'})")
     logger.log(f"  epochs        : {args.epochs}")
     logger.log(f"  lr            : {args.lr}")
-    logger.log(f"  z_bar         : {args.z_bar}")
     logger.log(f"  save_per      : {args.save_per}")
     logger.log(f"  log_per       : {args.log_per}")
     logger.log("=" * 70)
@@ -182,7 +180,6 @@ def main():
     if args.train:
         logger.log("Training")
         all_losses = mm.fit(
-            z_bar=args.z_bar,
             epochs=args.epochs,
             lr=args.lr,
             save_dir=save_dir,
