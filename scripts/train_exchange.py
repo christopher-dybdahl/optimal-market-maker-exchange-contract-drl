@@ -8,6 +8,7 @@ import torch
 from utils import load_cfg, load_train_cfg
 
 from optimal_market_maker_exchange_contract_drl import (
+    Exchange,
     Logger,
     Market,
     MarketMaker,
@@ -23,11 +24,11 @@ def main():
 
     # Initialise general directories
     PROJ_DIR = Path.cwd()
-    MODELS_DIR = PROJ_DIR / "saved_models" / "market_maker"
+    MODELS_DIR = PROJ_DIR / "saved_models" / "exchange"
     CONFIG_DIR = PROJ_DIR / "config"
 
     # fmt: off
-    train_cfg = load_train_cfg(path=CONFIG_DIR / "train_mm_cfg.json")
+    train_cfg = load_train_cfg(path=CONFIG_DIR / "train_exchange_cfg.json")
     parser = ArgumentParser()
     parser.add_argument("--device",        type=str,   default=train_cfg["device"],        help="Device to use for training (cpu or cuda)")
     parser.add_argument("--batch_size",    type=int,   default=train_cfg["batch_size"],    help="Batch size")
@@ -43,9 +44,7 @@ def main():
     # fmt: on
 
     # Initialise particular directory and create if it doesn't exist
-    save_dir = MODELS_DIR / (
-        f"{args.model_name + '_' if args.model_name else ''}model"
-    )  # TODO: Create suitable default name suffix
+    save_dir = MODELS_DIR / (f"{args.model_name + '_' if args.model_name else ''}model")
     os.makedirs(save_dir, exist_ok=True)
 
     # If loading an existing model and training.log exists, append to it instead of overwriting
@@ -80,19 +79,35 @@ def main():
 
     device = torch.device(args.device)
 
-    # Retrieve market config and initialise market object
+    # Load exchange config
     try:
-        if args.load_if_exists and os.path.exists(save_dir / "market_cfg.json"):
-            market_cfg_path = save_dir / "market_cfg.json"
+        if args.load_if_exists and os.path.exists(save_dir / "exchange_cfg.json"):
+            exchange_cfg_path = save_dir / "exchange_cfg.json"
             source = "saved"
         else:
-            market_cfg_path = CONFIG_DIR / "market_cfg.json"
+            exchange_cfg_path = CONFIG_DIR / "exchange_cfg.json"
             source = "config/"
 
-        logger.log(f"Loading market config from ({source}) {market_cfg_path}")
+        logger.log(f"Loading exchange config from ({source}) {exchange_cfg_path}")
+        exchange_cfg = load_cfg(exchange_cfg_path)
+    except Exception as e:
+        logger.log(f"Error loading exchange config: {e}")
+        raise LookupError
+
+    # Resolve MM model directory (relative paths are relative to project root)
+    mm_model_dir = Path(exchange_cfg["mm_model_dir"])
+    if not mm_model_dir.is_absolute():
+        mm_model_dir = PROJ_DIR / mm_model_dir
+
+    logger.log(f"Loading pre-trained MarketMaker from {mm_model_dir}")
+
+    # Load market config from the saved MM model directory
+    try:
+        market_cfg_path = mm_model_dir / "market_cfg.json"
+        logger.log(f"Loading market config from {market_cfg_path}")
         market_cfg = load_cfg(market_cfg_path)
     except Exception as e:
-        logger.log(f"Error loading market config: {e}")
+        logger.log(f"Error loading market config from MM model dir: {e}")
         raise LookupError
 
     market = Market(**market_cfg, batch_size=args.batch_size, dtype=torch.float32)
@@ -110,19 +125,13 @@ def main():
     logger.log("=" * 70)
     # fmt: on
 
-    # Retrieve market maker config and initialise market maker object
+    # Load market maker config from the saved MM model directory
     try:
-        if args.load_if_exists and os.path.exists(save_dir / "market_maker_cfg.json"):
-            mm_cfg_path = save_dir / "market_maker_cfg.json"
-            source = "saved"
-        else:
-            mm_cfg_path = CONFIG_DIR / "market_maker_cfg.json"
-            source = "config/"
-
-        logger.log(f"Loading market maker config from ({source}) {mm_cfg_path}")
+        mm_cfg_path = mm_model_dir / "market_maker_cfg.json"
+        logger.log(f"Loading market maker config from {mm_cfg_path}")
         mm_cfg = load_cfg(mm_cfg_path)
     except Exception as e:
-        logger.log(f"Error loading market maker config: {e}")
+        logger.log(f"Error loading market maker config from MM model dir: {e}")
         raise LookupError
 
     mm = MarketMaker(
@@ -132,7 +141,53 @@ def main():
         dtype=torch.float32,
     ).to(device=device)
 
-    # Locate latest checkpoint (highest epoch number) if load_if_exists
+    # Load the latest MM checkpoint
+    mm_ckpt_pattern = str(mm_model_dir / "checkpoint_epoch_*.pt")
+    mm_ckpts = sorted(
+        glob.glob(mm_ckpt_pattern),
+        key=lambda p: int(Path(p).stem.replace("checkpoint_epoch_", "")),
+    )
+    if not mm_ckpts:
+        logger.log(f"ERROR: No MM checkpoints found in {mm_model_dir}")
+        raise FileNotFoundError(f"No MM checkpoints in {mm_model_dir}")
+
+    mm_ckpt_path = Path(mm_ckpts[-1])
+    logger.log(f"Loading MM checkpoint: {mm_ckpt_path}")
+    mm_epochs, _, _ = mm.load(path=mm_ckpt_path, device=device)
+    logger.log(f"MM trained for {mm_epochs} epochs")
+
+    # Freeze MM parameters (the exchange optimises its own networks)
+    for p in mm.parameters():
+        p.requires_grad_(False)
+    mm.eval()
+    logger.log("MM parameters frozen")
+    logger.log("=" * 70)
+
+    # Log exchange params
+    # fmt: off
+    logger.log("Exchange params:")
+    logger.log(f"  eta                : {exchange_cfg['eta']}")
+    logger.log(f"  c_l                : {exchange_cfg['c_l']}")
+    logger.log(f"  c_d                : {exchange_cfg['c_d']}")
+    logger.log(f"  T                  : {exchange_cfg['T']}")
+    logger.log(f"  N                  : {exchange_cfg['N']}")
+    logger.log(f"  actor_architecture : {exchange_cfg['actor_architecture']}")
+    logger.log(f"  actor_layers       : {exchange_cfg['actor_layers']}")
+    logger.log(f"  critic_architecture: {exchange_cfg['critic_architecture']}")
+    logger.log(f"  critic_layers      : {exchange_cfg['critic_layers']}")
+    logger.log("=" * 70)
+    # fmt: on
+
+    # Build Exchange
+    exchange = Exchange(
+        market=market,
+        mm=mm,
+        exchange_cfg=exchange_cfg,
+        batch_size=args.batch_size,
+        dtype=torch.float32,
+    ).to(device=device)
+
+    # Locate latest exchange checkpoint if load_if_exists
     start_epoch = 1
     optimizer_state = None
     prior_losses = []
@@ -144,32 +199,32 @@ def main():
 
     if args.load_if_exists and existing_ckpts:
         latest_ckpt = Path(existing_ckpts[-1])
-        logger.log(f"Loading checkpoint: {latest_ckpt}")
-        epochs_trained, optimizer_state, prior_losses = mm.load(
-            path=latest_ckpt, device=device
-        )
-        start_epoch = epochs_trained + 1
+        logger.log(f"Loading exchange checkpoint: {latest_ckpt}")
+        ckpt = torch.load(latest_ckpt, map_location=device)
+        exchange.load_state_dict(ckpt["exchange_state_dict"])
+        start_epoch = ckpt.get("epochs_trained", 0) + 1
+        optimizer_state = ckpt.get("optimizer_state_dict", None)
+        prior_losses = ckpt.get("losses", [])
         logger.log(
-            f"Resuming from epoch {start_epoch} (previously trained for {epochs_trained} epochs)"
+            f"Resuming from epoch {start_epoch} (previously trained for {start_epoch - 1} epochs)"
         )
     else:
         if args.load_if_exists:
-            logger.log("No existing checkpoint found - starting from scratch")
+            logger.log("No existing exchange checkpoint found - starting from scratch")
         else:
             logger.log("load_if_exists=False - starting from scratch")
     logger.log("=" * 70)
 
     # Save configs
-    train_cfg_path = save_dir / "train_mm_cfg.json"
-    market_cfg_path = save_dir / "market_cfg.json"
-    mm_cfg_path = save_dir / "market_maker_cfg.json"
     logger.log("Saving configuration files...")
-    with open(train_cfg_path, "w") as f:
+    with open(save_dir / "train_exchange_cfg.json", "w") as f:
         json.dump(train_cfg, f, indent=4)
-    with open(market_cfg_path, "w") as f:
+    with open(save_dir / "market_cfg.json", "w") as f:
         json.dump(market_cfg, f, indent=4)
-    with open(mm_cfg_path, "w") as f:
+    with open(save_dir / "market_maker_cfg.json", "w") as f:
         json.dump(mm_cfg, f, indent=4)
+    with open(save_dir / "exchange_cfg.json", "w") as f:
+        json.dump(exchange_cfg, f, indent=4)
     logger.log(f"Configuration saved to {save_dir}")
     logger.log("=" * 70)
 
@@ -179,7 +234,7 @@ def main():
 
     if args.train:
         logger.log("Training")
-        all_losses = mm.fit(
+        all_losses = exchange.fit(
             epochs=args.epochs,
             lr=args.lr,
             save_dir=save_dir,

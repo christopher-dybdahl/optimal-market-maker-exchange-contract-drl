@@ -1,0 +1,12 @@
+{
+  "device": "cpu",
+  "batch_size": 1028,
+  "model_name": null,
+  "verbose": true,
+  "train": false,
+  "load_if_exists": true,
+  "epochs": 100000,
+  "lr": 1e-4,
+  "save_per": 10000,
+  "log_per": 1000
+}
