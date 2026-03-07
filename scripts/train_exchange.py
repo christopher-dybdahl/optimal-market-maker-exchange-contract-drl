@@ -12,7 +12,7 @@ from optimal_market_maker_exchange_contract_drl import (
     Logger,
     Market,
     MarketMaker,
-    plot_loss,
+    plot_exchange_losses,
 )
 
 
@@ -37,7 +37,9 @@ def main():
     parser.add_argument("--train",         action="store_true", default=train_cfg["train"],   help="Train the model")
     parser.add_argument("--load_if_exists",action="store_true", default=train_cfg["load_if_exists"], help="Load model if it exists")
     parser.add_argument("--epochs",        type=int,   default=train_cfg["epochs"],        help="Number of epochs to train")
-    parser.add_argument("--lr",            type=float, default=train_cfg["lr"],            help="Adam learning rate")
+    parser.add_argument("--lr_v",          type=float, default=train_cfg["lr_v"],          help="Learning rate for critic (value)")
+    parser.add_argument("--lr_z",          type=float, default=train_cfg["lr_z"],          help="Learning rate for actor (exploitation)")
+    parser.add_argument("--lr_z_explore",  type=float, default=train_cfg["lr_z_explore"],  help="Learning rate for actor (exploration)")
     parser.add_argument("--save_per",      type=int,   default=train_cfg["save_per"],      help="Save checkpoint every N epochs")
     parser.add_argument("--log_per",       type=int,   default=train_cfg["log_per"],       help="Log loss every N epochs")
     args = parser.parse_args()
@@ -71,7 +73,9 @@ def main():
     logger.log(f"  train         : {args.train}")
     logger.log(f"  load_if_exists: {args.load_if_exists} ({'will attempt to load latest checkpoint' if args.load_if_exists else 'will start from scratch'})")
     logger.log(f"  epochs        : {args.epochs}")
-    logger.log(f"  lr            : {args.lr}")
+    logger.log(f"  lr_v          : {args.lr_v}")
+    logger.log(f"  lr_z          : {args.lr_z}")
+    logger.log(f"  lr_z_explore  : {args.lr_z_explore}")
     logger.log(f"  save_per      : {args.save_per}")
     logger.log(f"  log_per       : {args.log_per}")
     logger.log("=" * 70)
@@ -189,8 +193,8 @@ def main():
 
     # Locate latest exchange checkpoint if load_if_exists
     start_epoch = 1
-    optimizer_state = None
-    prior_losses = []
+    optimizer_states = None
+    prior_losses = {"value": [], "policy": [], "exploration": []}
     ckpt_pattern = str(save_dir / "checkpoint_epoch_*.pt")
     existing_ckpts = sorted(
         glob.glob(ckpt_pattern),
@@ -200,13 +204,13 @@ def main():
     if args.load_if_exists and existing_ckpts:
         latest_ckpt = Path(existing_ckpts[-1])
         logger.log(f"Loading exchange checkpoint: {latest_ckpt}")
-        ckpt = torch.load(latest_ckpt, map_location=device)
-        exchange.load_state_dict(ckpt["exchange_state_dict"])
-        start_epoch = ckpt.get("epochs_trained", 0) + 1
-        optimizer_state = ckpt.get("optimizer_state_dict", None)
-        prior_losses = ckpt.get("losses", [])
+        epochs_trained, optimizer_states, prior_losses = exchange.load(
+            path=latest_ckpt, device=device
+        )
+        start_epoch = epochs_trained + 1
         logger.log(
-            f"Resuming from epoch {start_epoch} (previously trained for {start_epoch - 1} epochs)"
+            f"Resuming from epoch {start_epoch} "
+            f"(previously trained for {epochs_trained} epochs)"
         )
     else:
         if args.load_if_exists:
@@ -236,13 +240,15 @@ def main():
         logger.log("Training")
         all_losses = exchange.fit(
             epochs=args.epochs,
-            lr=args.lr,
+            lr_v=args.lr_v,
+            lr_z=args.lr_z,
+            lr_z_explore=args.lr_z_explore,
             save_dir=save_dir,
             save_per=args.save_per,
             log_per=args.log_per,
             logger=logger,
             start_epoch=start_epoch,
-            optimizer_state=optimizer_state,
+            optimizer_states=optimizer_states,
             prior_losses=prior_losses,
         )
     else:
@@ -252,9 +258,9 @@ def main():
     ###### PLOTTING ######
     ######################
 
-    if all_losses:
+    if any(all_losses.get(k) for k in ["value", "policy", "exploration"]):
         loss_fig_path = save_dir / "loss.png"
-        loss_fig = plot_loss(losses=all_losses, save_path=loss_fig_path)
+        loss_fig = plot_exchange_losses(losses=all_losses, save_path=loss_fig_path)
         logger.log(f"Loss plot saved to {loss_fig_path}")
         loss_fig.show()
 

@@ -134,3 +134,62 @@ def plot_loss(
         fig.savefig(save_path, dpi=150, bbox_inches="tight")
 
     return fig
+
+
+def plot_exchange_losses(
+    losses: dict[str, list[float]],
+    smoothing: int = 100,
+    save_path: Path = None,
+) -> plt.Figure:
+    """
+    Plot three exchange training losses side-by-side.
+
+    Args:
+        losses:     dict with keys "value", "policy", "exploration"
+        smoothing:  window size for rolling average (0 to disable)
+        save_path:  if provided, save the figure to this path
+
+    Returns:
+        matplotlib Figure
+    """
+    titles = {
+        "value": "Critic (value)",
+        "policy": "Actor (exploitation)",
+        "exploration": "Actor (exploration)",
+    }
+    fig, axes = plt.subplots(1, 3, figsize=(15, 4))
+
+    for ax, key in zip(axes, ["value", "policy", "exploration"]):
+        vals = losses.get(key, [])
+        if not vals:
+            ax.set_title(titles[key])
+            continue
+
+        epochs = np.arange(1, len(vals) + 1)
+        arr = np.array(vals)
+
+        ax.plot(epochs, arr, alpha=0.3, linewidth=0.5, label="raw")
+
+        if smoothing > 0 and len(vals) >= smoothing:
+            kernel = np.ones(smoothing) / smoothing
+            smoothed = np.convolve(arr, kernel, mode="valid")
+            ax.plot(
+                epochs[smoothing - 1 :],
+                smoothed,
+                linewidth=1.5,
+                label=f"rolling avg ({smoothing})",
+            )
+
+        ax.set_xlabel("Epoch")
+        ax.set_ylabel("Loss")
+        ax.set_title(titles[key])
+        ax.legend()
+        ax.ticklabel_format(style="plain", axis="y", useOffset=False)
+
+    fig.suptitle("Exchange Training Losses")
+    fig.tight_layout()
+
+    if save_path is not None:
+        fig.savefig(save_path, dpi=150, bbox_inches="tight")
+
+    return fig

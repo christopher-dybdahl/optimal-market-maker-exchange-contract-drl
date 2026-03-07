@@ -2,7 +2,7 @@
 Run configuration
   device        : cpu
   batch_size    : 1028
-  model_name    : 'keep/'
+  model_name    : None
   train         : True
   load_if_exists: True (will attempt to load latest checkpoint)
   epochs        : 10000
@@ -24,20 +24,20 @@ Loading market maker config from (config/) C:\Users\chris\VSCodeProjects\optimal
 No existing checkpoint found - starting from scratch
 ======================================================================
 Saving configuration files...
-Configuration saved to C:\Users\chris\VSCodeProjects\optimal-market-maker-exchange-contract-drl\saved_models\market_maker\keep\_model
+Configuration saved to C:\Users\chris\VSCodeProjects\optimal-market-maker-exchange-contract-drl\saved_models\market_maker\model
 ======================================================================
 Training
 Training epochs 1 -> 10000 (lr=0.0001, B=1028)
-  Epoch  1000/10000 | loss: -2887.684570
-  Epoch  2000/10000 | loss: -4779.725586
-  Epoch  3000/10000 | loss: -5689.871582
-  Epoch  4000/10000 | loss: -5962.106445
-  Epoch  5000/10000 | loss: -5687.425293
-  Epoch  6000/10000 | loss: -5878.292969
-  Epoch  7000/10000 | loss: -5948.981445
-  Epoch  8000/10000 | loss: -6225.625488
-  Epoch  9000/10000 | loss: -6197.261230
-  Epoch 10000/10000 | loss: -6002.867676
-  Checkpoint saved -> C:\Users\chris\VSCodeProjects\optimal-market-maker-exchange-contract-drl\saved_models\market_maker\keep\_model\checkpoint_epoch_10000.pt
-Training complete. Final epoch: 10000 | avg loss (last 1000 epochs): -6192.127299
-Loss plot saved to C:\Users\chris\VSCodeProjects\optimal-market-maker-exchange-contract-drl\saved_models\market_maker\keep\_model\loss.png
+  Epoch  1000/10000 | loss: -2732.199951
+  Epoch  2000/10000 | loss: -5171.361328
+  Epoch  3000/10000 | loss: -5258.034180
+  Epoch  4000/10000 | loss: -5615.711914
+  Epoch  5000/10000 | loss: -5870.164062
+  Epoch  6000/10000 | loss: -6171.957031
+  Epoch  7000/10000 | loss: -6376.114258
+  Epoch  8000/10000 | loss: -6024.773926
+  Epoch  9000/10000 | loss: -6764.075195
+  Epoch 10000/10000 | loss: -6448.010742
+  Checkpoint saved -> C:\Users\chris\VSCodeProjects\optimal-market-maker-exchange-contract-drl\saved_models\market_maker\model\checkpoint_epoch_10000.pt
+Training complete. Final epoch: 10000 | avg loss (last 1000 epochs): -6208.523446
+Loss plot saved to C:\Users\chris\VSCodeProjects\optimal-market-maker-exchange-contract-drl\saved_models\market_maker\model\loss.png
