@@ -1,6 +1,6 @@
 {
   "device": "cpu",
-  "batch_size": 1028,
+  "batch_size": 256,
   "model_name": null,
   "verbose": true,
   "train": false,
