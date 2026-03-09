@@ -441,6 +441,7 @@ class Exchange(nn.Module):
         lr_z: float,
         lr_z_explore: float,
         n_critic_steps: int = 5,
+        clip_grad_norm: float = None,
         seed: int = None,
         save_dir: Path = None,
         save_per: int = 50,
@@ -560,9 +561,10 @@ class Exchange(nn.Module):
 
                 opt_v.zero_grad(set_to_none=True)
                 v_loss.backward()
-                torch.nn.utils.clip_grad_norm_(
-                    self.critic_nets.parameters(), max_norm=1.0
-                )
+                if clip_grad_norm is not None:
+                    torch.nn.utils.clip_grad_norm_(
+                        self.critic_nets.parameters(), max_norm=clip_grad_norm
+                    )
                 opt_v.step()
 
             # ==============================================================
@@ -587,9 +589,10 @@ class Exchange(nn.Module):
 
             opt_z.zero_grad(set_to_none=True)
             z_loss.backward()
-            torch.nn.utils.clip_grad_norm_(
-                self.actor_nets.parameters(), max_norm=1.0
-            )
+            if clip_grad_norm is not None:
+                torch.nn.utils.clip_grad_norm_(
+                    self.actor_nets.parameters(), max_norm=clip_grad_norm
+                )
             opt_z.step()
 
             # ==============================================================
@@ -636,9 +639,10 @@ class Exchange(nn.Module):
 
             opt_z_explore.zero_grad(set_to_none=True)
             e_loss.backward()
-            torch.nn.utils.clip_grad_norm_(
-                self.actor_nets.parameters(), max_norm=1.0
-            )
+            if clip_grad_norm is not None:
+                torch.nn.utils.clip_grad_norm_(
+                    self.actor_nets.parameters(), max_norm=clip_grad_norm
+                )
             opt_z_explore.step()
 
             # Unfreeze critic for next epoch
@@ -651,9 +655,9 @@ class Exchange(nn.Module):
             losses["policy"].append(z_loss.item())
             losses["exploration"].append(e_loss.item())
 
-            v_loss_val = losses["value"][-1]
-            if save_dir is not None and v_loss_val < best_loss:
-                best_loss = v_loss_val
+            z_loss_val = losses["policy"][-1]
+            if save_dir is not None and z_loss_val < best_loss:
+                best_loss = z_loss_val
                 best_path = save_dir / "best_model.pt"
                 self.save(
                     path=best_path,
@@ -662,9 +666,9 @@ class Exchange(nn.Module):
                     losses=losses,
                     best_loss=best_loss,
                 )
-                _log(f"  New best model (v_loss={best_loss:.6f}) saved -> {best_path}")
-            elif v_loss_val < best_loss:
-                best_loss = v_loss_val
+                _log(f"  New best model (z_loss={best_loss:.6f}) saved -> {best_path}")
+            elif z_loss_val < best_loss:
+                best_loss = z_loss_val
 
             if epoch % log_per == 0 or epoch == final_epoch:
                 _log(
@@ -695,7 +699,7 @@ class Exchange(nn.Module):
             f"{sum(losses['policy'][-min(log_per, epochs) :]) / min(log_per, epochs):.6f} | "
             f"avg e_loss: "
             f"{sum(losses['exploration'][-min(log_per, epochs) :]) / min(log_per, epochs):.6f} | "
-            f"best v_loss: {best_loss:.6f}"
+            f"best z_loss: {best_loss:.6f}"
         )
 
         return losses, best_loss

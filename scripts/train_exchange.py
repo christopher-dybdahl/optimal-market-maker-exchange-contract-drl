@@ -41,6 +41,7 @@ def main():
     parser.add_argument("--lr_z",          type=float, default=train_cfg["lr_z"],          help="Learning rate for actor (exploitation)")
     parser.add_argument("--lr_z_explore",  type=float, default=train_cfg["lr_z_explore"],  help="Learning rate for actor (exploration)")
     parser.add_argument("--n_critic_steps",type=int,   default=train_cfg["n_critic_steps"],help="Critic update steps per actor step")
+    parser.add_argument("--clip_grad_norm",type=float, default=train_cfg["clip_grad_norm"],help="Max norm for gradient clipping (None to disable)")
     parser.add_argument("--save_per",      type=int,   default=train_cfg["save_per"],      help="Save checkpoint every N epochs")
     parser.add_argument("--log_per",       type=int,   default=train_cfg["log_per"],       help="Log loss every N epochs")
     args = parser.parse_args()
@@ -78,6 +79,7 @@ def main():
     logger.log(f"  lr_z          : {args.lr_z}")
     logger.log(f"  lr_z_explore  : {args.lr_z_explore}")
     logger.log(f"  n_critic_steps: {args.n_critic_steps}")
+    logger.log(f"  clip_grad_norm: {args.clip_grad_norm}")
     logger.log(f"  save_per      : {args.save_per}")
     logger.log(f"  log_per       : {args.log_per}")
     logger.log("=" * 70)
@@ -248,6 +250,7 @@ def main():
             lr_z=args.lr_z,
             lr_z_explore=args.lr_z_explore,
             n_critic_steps=args.n_critic_steps,
+            clip_grad_norm=args.clip_grad_norm,
             save_dir=save_dir,
             save_per=args.save_per,
             log_per=args.log_per,

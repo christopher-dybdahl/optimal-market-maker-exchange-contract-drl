@@ -11,6 +11,7 @@
   "lr_z": 1e-4,
   "lr_z_explore": 1e-4,
   "n_critic_steps": 1,
+  "clip_grad_norm": 1,
   "save_per": 50,
   "log_per": 10
 }
