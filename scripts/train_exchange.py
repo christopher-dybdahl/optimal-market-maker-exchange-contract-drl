@@ -1,4 +1,3 @@
-import glob
 import json
 import os
 from argparse import ArgumentParser
@@ -36,10 +35,12 @@ def main():
     parser.add_argument("--verbose",       action="store_true", default=train_cfg["verbose"], help="Print training progress")
     parser.add_argument("--train",         action="store_true", default=train_cfg["train"],   help="Train the model")
     parser.add_argument("--load_if_exists",action="store_true", default=train_cfg["load_if_exists"], help="Load model if it exists")
+    parser.add_argument("--load_best_mm", action="store_true", default=train_cfg["load_best_mm"], help="Load best MM checkpoint instead of latest")
     parser.add_argument("--epochs",        type=int,   default=train_cfg["epochs"],        help="Number of epochs to train")
     parser.add_argument("--lr_v",          type=float, default=train_cfg["lr_v"],          help="Learning rate for critic (value)")
     parser.add_argument("--lr_z",          type=float, default=train_cfg["lr_z"],          help="Learning rate for actor (exploitation)")
     parser.add_argument("--lr_z_explore",  type=float, default=train_cfg["lr_z_explore"],  help="Learning rate for actor (exploration)")
+    parser.add_argument("--n_critic_steps",type=int,   default=train_cfg["n_critic_steps"],help="Critic update steps per actor step")
     parser.add_argument("--save_per",      type=int,   default=train_cfg["save_per"],      help="Save checkpoint every N epochs")
     parser.add_argument("--log_per",       type=int,   default=train_cfg["log_per"],       help="Log loss every N epochs")
     args = parser.parse_args()
@@ -76,6 +77,7 @@ def main():
     logger.log(f"  lr_v          : {args.lr_v}")
     logger.log(f"  lr_z          : {args.lr_z}")
     logger.log(f"  lr_z_explore  : {args.lr_z_explore}")
+    logger.log(f"  n_critic_steps: {args.n_critic_steps}")
     logger.log(f"  save_per      : {args.save_per}")
     logger.log(f"  log_per       : {args.log_per}")
     logger.log("=" * 70)
@@ -145,19 +147,21 @@ def main():
         dtype=torch.float32,
     ).to(device=device)
 
-    # Load the latest MM checkpoint
-    mm_ckpt_pattern = str(mm_model_dir / "checkpoint_epoch_*.pt")
-    mm_ckpts = sorted(
-        glob.glob(mm_ckpt_pattern),
-        key=lambda p: int(Path(p).stem.replace("checkpoint_epoch_", "")),
-    )
-    if not mm_ckpts:
-        logger.log(f"ERROR: No MM checkpoints found in {mm_model_dir}")
-        raise FileNotFoundError(f"No MM checkpoints in {mm_model_dir}")
-
-    mm_ckpt_path = Path(mm_ckpts[-1])
+    # Load MM checkpoint (best or latest)
+    mm_best_path = mm_model_dir / "best_model.pt"
+    if args.load_best_mm and mm_best_path.exists():
+        mm_ckpt_path = mm_best_path
+    else:
+        mm_ckpts = sorted(
+            mm_model_dir.glob("checkpoint_epoch_*.pt"),
+            key=lambda p: int(p.stem.replace("checkpoint_epoch_", "")),
+        )
+        if not mm_ckpts:
+            logger.log(f"ERROR: No MM checkpoints found in {mm_model_dir}")
+            raise FileNotFoundError(f"No MM checkpoints in {mm_model_dir}")
+        mm_ckpt_path = Path(mm_ckpts[-1])
     logger.log(f"Loading MM checkpoint: {mm_ckpt_path}")
-    mm_epochs, _, _ = mm.load(path=mm_ckpt_path, device=device)
+    mm_epochs, _, _, _ = mm.load(path=mm_ckpt_path, device=device)
     logger.log(f"MM trained for {mm_epochs} epochs")
 
     # Freeze MM parameters (the exchange optimises its own networks)
@@ -195,16 +199,16 @@ def main():
     start_epoch = 1
     optimizer_states = None
     prior_losses = {"value": [], "policy": [], "exploration": []}
-    ckpt_pattern = str(save_dir / "checkpoint_epoch_*.pt")
+    best_loss = None
     existing_ckpts = sorted(
-        glob.glob(ckpt_pattern),
-        key=lambda p: int(Path(p).stem.replace("checkpoint_epoch_", "")),
+        save_dir.glob("checkpoint_epoch_*.pt"),
+        key=lambda p: int(p.stem.replace("checkpoint_epoch_", "")),
     )
 
     if args.load_if_exists and existing_ckpts:
         latest_ckpt = Path(existing_ckpts[-1])
         logger.log(f"Loading exchange checkpoint: {latest_ckpt}")
-        epochs_trained, optimizer_states, prior_losses = exchange.load(
+        epochs_trained, optimizer_states, prior_losses, best_loss = exchange.load(
             path=latest_ckpt, device=device
         )
         start_epoch = epochs_trained + 1
@@ -238,11 +242,12 @@ def main():
 
     if args.train:
         logger.log("Training")
-        all_losses = exchange.fit(
+        all_losses, best_loss = exchange.fit(
             epochs=args.epochs,
             lr_v=args.lr_v,
             lr_z=args.lr_z,
             lr_z_explore=args.lr_z_explore,
+            n_critic_steps=args.n_critic_steps,
             save_dir=save_dir,
             save_per=args.save_per,
             log_per=args.log_per,
@@ -250,6 +255,7 @@ def main():
             start_epoch=start_epoch,
             optimizer_states=optimizer_states,
             prior_losses=prior_losses,
+            best_loss=best_loss,
         )
     else:
         all_losses = prior_losses

@@ -1,14 +1,16 @@
 {
-  "device": "cpu",
-  "batch_size": 1028,
+  "device": "cuda",
+  "batch_size": 4096,
   "model_name": null,
   "verbose": true,
   "train": false,
-  "load_if_exists": true,
-  "epochs": 100000,
+  "load_if_exists": false,
+  "load_best_mm": true,
+  "epochs": 10000,
   "lr_v": 1e-4,
   "lr_z": 1e-4,
   "lr_z_explore": 1e-4,
-  "save_per": 10000,
-  "log_per": 1000
+  "n_critic_steps": 1,
+  "save_per": 50,
+  "log_per": 10
 }

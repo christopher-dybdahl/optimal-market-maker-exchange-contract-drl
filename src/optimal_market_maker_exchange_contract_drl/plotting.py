@@ -90,6 +90,120 @@ def plot_controls(
     return fig
 
 
+def plot_incentives_vs_inventory(
+    exchange,
+    step: int,
+    n_points: int = 400,
+    save_path: Path = None,
+) -> plt.Figure:
+    """
+    Plot exchange optimal incentives z*(q) as a function of inventory q
+    at a given time step.
+
+    Args:
+        exchange:   trained Exchange
+        step:       time step index (0..N-1)
+        n_points:   number of points along the inventory sweep
+        save_path:  if provided, save the figure to this path
+
+    Returns:
+        matplotlib Figure
+    """
+    device = exchange.eta.device
+    dtype = exchange.eta.dtype
+    q_bar = exchange.mm.q_bar.item()
+
+    was_training = exchange.training
+    exchange.eval()
+
+    with torch.no_grad():
+        q = torch.linspace(-q_bar, q_bar, n_points, device=device, dtype=dtype)
+        z4 = exchange.policy(q, step).cpu().numpy()  # (N, 4)
+
+    if was_training:
+        exchange.train()
+
+    x = q.cpu().numpy()
+
+    fig, ax = plt.subplots(figsize=(7, 5))
+
+    ax.plot(x, z4[:, 0], linestyle=":", label="ask lit")
+    ax.plot(x, z4[:, 1], linestyle="--", label="bid lit")
+    ax.plot(x, z4[:, 2], linestyle="-.", label="ask dark")
+    ax.plot(x, z4[:, 3], linestyle=(0, (3, 1, 1, 1, 1, 1)), label="bid dark")
+
+    ax.set_xlabel("Inventory")
+    ax.set_title("Incentives")
+    ax.ticklabel_format(style="plain", axis="y", useOffset=False)
+    ax.legend()
+
+    fig.tight_layout()
+
+    if save_path is not None:
+        fig.savefig(save_path, dpi=150, bbox_inches="tight")
+
+    return fig
+
+
+def plot_optimal_volumes_vs_inventory(
+    exchange,
+    step: int,
+    n_points: int = 400,
+    save_path: Path = None,
+) -> plt.Figure:
+    """
+    Plot market maker optimal volumes under the exchange's optimal incentives,
+    as a function of inventory q at a given time step.
+
+    For each q, computes z*(q) from the exchange policy, then ell*(z*(q), q)
+    from the market maker controls.
+
+    Args:
+        exchange:   trained Exchange
+        step:       time step index (0..N-1)
+        n_points:   number of points along the inventory sweep
+        save_path:  if provided, save the figure to this path
+
+    Returns:
+        matplotlib Figure
+    """
+    device = exchange.eta.device
+    dtype = exchange.eta.dtype
+    q_bar = exchange.mm.q_bar.item()
+
+    was_training = exchange.training
+    exchange.eval()
+
+    with torch.no_grad():
+        q = torch.linspace(-q_bar, q_bar, n_points, device=device, dtype=dtype)
+        z4 = exchange.policy(q, step)              # (N, 4)
+        ell4 = exchange.mm.controls(z4=z4, q=q).cpu().numpy()  # (N, 4)
+
+    if was_training:
+        exchange.train()
+
+    x = q.cpu().numpy()
+
+    fig, ax = plt.subplots(figsize=(7, 5))
+
+    ax.plot(x, ell4[:, 0], linestyle=":", label="ask lit")
+    ax.plot(x, ell4[:, 1], linestyle="--", label="bid lit")
+    ax.plot(x, ell4[:, 2], linestyle="-.", label="ask dark")
+    ax.plot(x, ell4[:, 3], linestyle=(0, (3, 1, 1, 1, 1, 1)), label="bid dark")
+
+    ax.set_xlabel("Inventory")
+    ax.set_title("Optimal volumes")
+    ax.ticklabel_format(style="plain", axis="y", useOffset=False)
+    ax.legend()
+
+    fig.tight_layout()
+
+    if save_path is not None:
+        fig.savefig(save_path, dpi=150, bbox_inches="tight")
+
+    return fig
+
+
 def plot_loss(
     losses: list[float],
     smoothing: int = 100,
