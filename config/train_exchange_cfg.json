@@ -12,6 +12,9 @@
   "lr_z_explore": 1e-4,
   "n_critic_steps": 1,
   "clip_grad_norm": 1,
-  "save_per": 50,
+  "explore_std": 1,
+  "explore_std_final": 0,
+  "explore_anneal_epochs": 500,
+  "save_per": 100,
   "log_per": 10
 }

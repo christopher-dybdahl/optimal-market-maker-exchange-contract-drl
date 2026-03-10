@@ -42,6 +42,9 @@ def main():
     parser.add_argument("--lr_z_explore",  type=float, default=train_cfg["lr_z_explore"],  help="Learning rate for actor (exploration)")
     parser.add_argument("--n_critic_steps",type=int,   default=train_cfg["n_critic_steps"],help="Critic update steps per actor step")
     parser.add_argument("--clip_grad_norm",type=float, default=train_cfg["clip_grad_norm"],help="Max norm for gradient clipping (None to disable)")
+    parser.add_argument("--explore_std",              type=float, default=train_cfg["explore_std"],              help="Initial exploration perturbation std")
+    parser.add_argument("--explore_std_final",       type=float, default=train_cfg["explore_std_final"],       help="Final exploration std after annealing (None to disable)")
+    parser.add_argument("--explore_anneal_epochs",   type=int,   default=train_cfg["explore_anneal_epochs"],   help="Epochs over which to anneal std (None to disable)")
     parser.add_argument("--save_per",      type=int,   default=train_cfg["save_per"],      help="Save checkpoint every N epochs")
     parser.add_argument("--log_per",       type=int,   default=train_cfg["log_per"],       help="Log loss every N epochs")
     args = parser.parse_args()
@@ -80,6 +83,9 @@ def main():
     logger.log(f"  lr_z_explore  : {args.lr_z_explore}")
     logger.log(f"  n_critic_steps: {args.n_critic_steps}")
     logger.log(f"  clip_grad_norm: {args.clip_grad_norm}")
+    logger.log(f"  explore_std   : {args.explore_std}")
+    logger.log(f"  explore_final : {args.explore_std_final}")
+    logger.log(f"  anneal_epochs : {args.explore_anneal_epochs}")
     logger.log(f"  save_per      : {args.save_per}")
     logger.log(f"  log_per       : {args.log_per}")
     logger.log("=" * 70)
@@ -202,6 +208,7 @@ def main():
     optimizer_states = None
     prior_losses = {"value": [], "policy": [], "exploration": []}
     best_loss = None
+    explore_std = args.explore_std
     existing_ckpts = sorted(
         save_dir.glob("checkpoint_epoch_*.pt"),
         key=lambda p: int(p.stem.replace("checkpoint_epoch_", "")),
@@ -210,13 +217,16 @@ def main():
     if args.load_if_exists and existing_ckpts:
         latest_ckpt = Path(existing_ckpts[-1])
         logger.log(f"Loading exchange checkpoint: {latest_ckpt}")
-        epochs_trained, optimizer_states, prior_losses, best_loss = exchange.load(
+        epochs_trained, optimizer_states, prior_losses, best_loss, saved_std = exchange.load(
             path=latest_ckpt, device=device
         )
         start_epoch = epochs_trained + 1
+        if saved_std is not None:
+            explore_std = saved_std
         logger.log(
             f"Resuming from epoch {start_epoch} "
-            f"(previously trained for {epochs_trained} epochs)"
+            f"(previously trained for {epochs_trained} epochs, "
+            f"explore_std={explore_std})"
         )
     else:
         if args.load_if_exists:
@@ -251,6 +261,9 @@ def main():
             lr_z_explore=args.lr_z_explore,
             n_critic_steps=args.n_critic_steps,
             clip_grad_norm=args.clip_grad_norm,
+            explore_std=explore_std,
+            explore_std_final=args.explore_std_final,
+            explore_anneal_epochs=args.explore_anneal_epochs,
             save_dir=save_dir,
             save_per=args.save_per,
             log_per=args.log_per,

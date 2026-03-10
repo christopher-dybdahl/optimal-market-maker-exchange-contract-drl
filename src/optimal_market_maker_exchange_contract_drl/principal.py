@@ -393,6 +393,7 @@ class Exchange(nn.Module):
         optimizers: dict[str, torch.optim.Optimizer] = None,
         losses: dict[str, list[float]] = None,
         best_loss: float = None,
+        explore_std: float = None,
     ) -> None:
         ckpt = {
             "exchange_state_dict": self.state_dict(),
@@ -405,19 +406,21 @@ class Exchange(nn.Module):
             if losses is not None
             else {"value": [], "policy": [], "exploration": []},
             "best_loss": best_loss,
+            "explore_std": explore_std,
         }
         Path(path).parent.mkdir(parents=True, exist_ok=True)
         torch.save(ckpt, path)
 
     def load(
         self, path: str, device: torch.device
-    ) -> tuple[int, dict | None, dict[str, list[float]], float | None]:
+    ) -> tuple[int, dict | None, dict[str, list[float]], float | None, float | None]:
         """
         Load exchange weights and training state from a checkpoint.
 
         Returns:
-            (epochs_trained, optimizer_states, losses, best_loss) — pass these
-            to fit() to resume training correctly.
+            (epochs_trained, optimizer_states, losses, best_loss,
+             explore_std) — pass these to fit() to resume training
+             correctly.
         """
         ckpt = torch.load(path, map_location="cpu")
 
@@ -432,6 +435,7 @@ class Exchange(nn.Module):
             ckpt.get("optimizer_states", None),
             ckpt.get("losses", {"value": [], "policy": [], "exploration": []}),
             ckpt.get("best_loss", None),
+            ckpt.get("explore_std", None),
         )
 
     def fit(
@@ -442,6 +446,9 @@ class Exchange(nn.Module):
         lr_z_explore: float,
         n_critic_steps: int = 5,
         clip_grad_norm: float = None,
+        explore_std: float = 1.0,
+        explore_std_final: float = None,
+        explore_anneal_epochs: int = None,
         seed: int = None,
         save_dir: Path = None,
         save_per: int = 50,
@@ -507,6 +514,16 @@ class Exchange(nn.Module):
         }
         best_loss = best_loss if best_loss is not None else float("inf")
 
+        # --- Exploration std annealing ---
+        # Linear anneal: std goes from explore_std (initial) to
+        # explore_std_final over explore_anneal_epochs, then stays at
+        # the final value.  If no final value is given, std is constant.
+        anneal = explore_std_final is not None and explore_anneal_epochs is not None
+        if anneal:
+            std_init = explore_std
+            std_final = explore_std_final
+            anneal_total = explore_anneal_epochs
+
         def _log(msg: str) -> None:
             if logger is not None:
                 logger.log(msg)
@@ -515,6 +532,13 @@ class Exchange(nn.Module):
             f"Training epochs {start_epoch} -> {final_epoch} "
             f"(lr_v={lr_v}, lr_z={lr_z}, lr_z_explore={lr_z_explore}, B={self.B})"
         )
+        if anneal:
+            _log(
+                f"Explore std annealing: {std_init} -> {std_final} "
+                f"over {anneal_total} epochs (linear)"
+            )
+        else:
+            _log(f"Explore std: {explore_std} (constant)")
 
         N, B = self.N, self.B
         phi = self.market.phi.unsqueeze(-1)  # (1, 2, 1) — broadcasts to (N, B, 2, *)
@@ -606,7 +630,15 @@ class Exchange(nn.Module):
             # surrogate loss:  −(advantage · ε · z).mean()
             # ==============================================================
             z4_all = self._policy_all(q)                             # post-exploit
-            perturbation = torch.randn_like(z4_all)
+
+            # Compute current exploration std (linear annealing)
+            if anneal:
+                progress = min((epoch - 1) / max(anneal_total - 1, 1), 1.0)
+                current_std = std_init + (std_final - std_init) * progress
+            else:
+                current_std = explore_std
+
+            perturbation = current_std * torch.randn_like(z4_all)
             z4_pert = (z4_all.detach() + perturbation).clamp(
                 -self.mm.z_bar, self.mm.z_bar
             )
@@ -665,6 +697,7 @@ class Exchange(nn.Module):
                     optimizers=optimizers,
                     losses=losses,
                     best_loss=best_loss,
+                    explore_std=current_std,
                 )
                 _log(f"  New best model (z_loss={best_loss:.6f}) saved -> {best_path}")
             elif z_loss_val < best_loss:
@@ -688,6 +721,7 @@ class Exchange(nn.Module):
                     optimizers=optimizers,
                     losses=losses,
                     best_loss=best_loss,
+                    explore_std=current_std,
                 )
                 _log(f"  Checkpoint saved -> {ckpt_path}")
 
