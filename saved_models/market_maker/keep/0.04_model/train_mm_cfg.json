@@ -1,0 +1,12 @@
+{
+    "device": "cuda",
+    "batch_size": 4096,
+    "model_name": null,
+    "verbose": true,
+    "train": false,
+    "load_if_exists": false,
+    "epochs": 100000,
+    "lr": 0.0001,
+    "save_per": 10000,
+    "log_per": 1000
+}

@@ -5,7 +5,7 @@ import torch.nn as nn
 
 from .agent import MarketMaker
 from .dynamics import Market
-from .nnets import FCnet
+from .nnets import BatchedFCnet, FCnet
 from .utils import Logger
 
 
@@ -54,34 +54,43 @@ class Exchange(nn.Module):
         self.register_buffer(
             "_spread3",
             self.market.half_tick
-            * torch.tensor([1.0, 1.0, 0.0], dtype=dtype).view(1, 1, 3),
+            * torch.tensor([1.0, 1.0, 0.0], dtype=dtype, device=self.market.half_tick.device).view(1, 1, 3),
         )
 
-        # Neural networks, one per time step
+        # Normalized time grid: t_norm[i] = i / N ∈ [0, 1) for fc_time input
+        self.register_buffer(
+            "_t_norm", torch.arange(self.N, dtype=dtype) / self.N
+        )
+
+        # Neural networks
         if exchange_cfg["actor_architecture"] == "fc":
-            self.actor_nets = nn.ModuleList(
-                [
-                    FCnet(
-                        layers=exchange_cfg["actor_layers"],
-                        activation=exchange_cfg["actor_activation"],
-                        output_activation=exchange_cfg["actor_output_activation"],
-                    )
-                    for _ in range(self.N)
-                ]
+            self.actor_nets = BatchedFCnet(
+                n=self.N,
+                layers=exchange_cfg["actor_layers"],
+                activation=exchange_cfg["actor_activation"],
+                output_activation=exchange_cfg["actor_output_activation"],
+            )
+        elif exchange_cfg["actor_architecture"] == "fc_time":
+            self.actor_nets = FCnet(
+                layers=exchange_cfg["actor_layers"],
+                activation=exchange_cfg["actor_activation"],
+                output_activation=exchange_cfg["actor_output_activation"],
             )
         else:
             raise ValueError
 
         if exchange_cfg["critic_architecture"] == "fc":
-            self.critic_nets = nn.ModuleList(
-                [
-                    FCnet(
-                        layers=exchange_cfg["critic_layers"],
-                        activation=exchange_cfg["critic_activation"],
-                        output_activation=exchange_cfg["critic_output_activation"],
-                    )
-                    for _ in range(self.N)
-                ]
+            self.critic_nets = BatchedFCnet(
+                n=self.N,
+                layers=exchange_cfg["critic_layers"],
+                activation=exchange_cfg["critic_activation"],
+                output_activation=exchange_cfg["critic_output_activation"],
+            )
+        elif exchange_cfg["critic_architecture"] == "fc_time":
+            self.critic_nets = FCnet(
+                layers=exchange_cfg["critic_layers"],
+                activation=exchange_cfg["critic_activation"],
+                output_activation=exchange_cfg["critic_output_activation"],
             )
         else:
             raise ValueError
@@ -104,7 +113,10 @@ class Exchange(nn.Module):
         q_norm = (q / self.mm.q_bar).unsqueeze(-1)  # (B, 1)
 
         if self.exchange_cfg["critic_architecture"] == "fc":
-            return self.critic_nets[i](q_norm).squeeze(-1)  # (B,)
+            return self.critic_nets.forward_single(q_norm, i).squeeze(-1)  # (B,)
+        elif self.exchange_cfg["critic_architecture"] == "fc_time":
+            t = self._t_norm[i].expand(q.shape[0], 1)               # (B, 1)
+            return self.critic_nets(torch.cat([q_norm, t], dim=-1)).squeeze(-1)
         else:
             raise ValueError
 
@@ -123,7 +135,10 @@ class Exchange(nn.Module):
         q_norm = (q / self.mm.q_bar).unsqueeze(-1)  # (B, 1)
 
         if self.exchange_cfg["actor_architecture"] == "fc":
-            return self.actor_nets[i](q_norm) * self.mm.z_bar  # (B, 4)
+            return self.actor_nets.forward_single(q_norm, i) * self.mm.z_bar  # (B, 4)
+        elif self.exchange_cfg["actor_architecture"] == "fc_time":
+            t = self._t_norm[i].expand(q.shape[0], 1)               # (B, 1)
+            return self.actor_nets(torch.cat([q_norm, t], dim=-1)) * self.mm.z_bar
         else:
             raise ValueError
 
@@ -218,12 +233,167 @@ class Exchange(nn.Module):
 
         return drift + jump.sum(dim=(1, 2))  # (B,)
 
+    # ------------------------------------------------------------------
+    # Batched methods — evaluate all N time-step networks in one call
+    # ------------------------------------------------------------------
+
+    def _value_all(self, q: torch.Tensor) -> torch.Tensor:
+        """Evaluate all N critic networks at q.  Returns (N, B)."""
+        q_norm = (q / self.mm.q_bar).unsqueeze(-1)              # (B, 1)
+
+        if self.exchange_cfg["critic_architecture"] == "fc":
+            x = q_norm.unsqueeze(0).expand(self.N, -1, -1)      # (N, B, 1)
+            return self.critic_nets(x).squeeze(-1)               # (N, B)
+        elif self.exchange_cfg["critic_architecture"] == "fc_time":
+            B = q.shape[0]
+            q_exp = q_norm.expand(self.N, -1, -1).reshape(self.N * B, 1)   # (N*B, 1)
+            t_exp = self._t_norm.unsqueeze(1).expand(-1, B).reshape(self.N * B, 1)
+            x = torch.cat([q_exp, t_exp], dim=-1)               # (N*B, 2)
+            return self.critic_nets(x).squeeze(-1).reshape(self.N, B)
+        else:
+            raise ValueError
+
+    def _value_all_shifted(self, q_shifted: torch.Tensor) -> torch.Tensor:
+        """
+        Evaluate critic_nets[i] at the four shifted-q values for each step i.
+
+        Args:
+            q_shifted: (N, B, 2, 2) — shifted inventories per (side, pool)
+
+        Returns:
+            (N, B, 2, 2) — critic values at each shifted q
+        """
+        N, B = q_shifted.shape[:2]
+
+        if self.exchange_cfg["critic_architecture"] == "fc":
+            qs_norm = (q_shifted.reshape(N, B * 4) / self.mm.q_bar).unsqueeze(-1)
+            return self.critic_nets(qs_norm).squeeze(-1).reshape(N, B, 2, 2)
+        elif self.exchange_cfg["critic_architecture"] == "fc_time":
+            qs_norm = (q_shifted.reshape(N * B * 4) / self.mm.q_bar).unsqueeze(-1)  # (N*B*4, 1)
+            t_exp = (
+                self._t_norm.view(N, 1, 1, 1)
+                .expand(-1, B, 2, 2)
+                .reshape(N * B * 4, 1)
+            )
+            x = torch.cat([qs_norm, t_exp], dim=-1)              # (N*B*4, 2)
+            return self.critic_nets(x).squeeze(-1).reshape(N, B, 2, 2)
+        else:
+            raise ValueError
+
+    def _policy_all(self, q: torch.Tensor) -> torch.Tensor:
+        """Evaluate all N actor networks at q.  Returns (N, B, 4)."""
+        q_norm = (q / self.mm.q_bar).unsqueeze(-1)              # (B, 1)
+
+        if self.exchange_cfg["actor_architecture"] == "fc":
+            x = q_norm.unsqueeze(0).expand(self.N, -1, -1)      # (N, B, 1)
+            return self.actor_nets(x) * self.mm.z_bar            # (N, B, 4)
+        elif self.exchange_cfg["actor_architecture"] == "fc_time":
+            B = q.shape[0]
+            q_exp = q_norm.expand(self.N, -1, -1).reshape(self.N * B, 1)
+            t_exp = self._t_norm.unsqueeze(1).expand(-1, B).reshape(self.N * B, 1)
+            x = torch.cat([q_exp, t_exp], dim=-1)               # (N*B, 2)
+            return (self.actor_nets(x) * self.mm.z_bar).reshape(self.N, B, 4)
+        else:
+            raise ValueError
+
+    def _controls_all(
+        self, z4_all: torch.Tensor, q_rep: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """
+        Compute MM controls for all N time steps.
+
+        Args:
+            z4_all: (N, B, 4)
+            q_rep:  (N*B,)
+
+        Returns:
+            z_all  (N, B, 2, 2),
+            ell_all (N, B, 2, 2)
+        """
+        N, B = z4_all.shape[:2]
+        z4_flat = z4_all.reshape(N * B, 4)
+        ell4_flat = self.mm.controls(z4=z4_flat, q=q_rep)
+        z_all = self.mm._pack_z(z4_flat).reshape(N, B, 2, 2)
+        ell_all = self.mm._pack_ell(ell4_flat).reshape(N, B, 2, 2)
+        return z_all, ell_all
+
+    def _hamiltonian_all(
+        self,
+        z_all: torch.Tensor,
+        q: torch.Tensor,
+        ell_all: torch.Tensor,
+        v_q: torch.Tensor,
+        v_shifted: torch.Tensor,
+    ) -> torch.Tensor:
+        """
+        Batched Hamiltonian for all N time steps.
+
+        Same maths as _hamiltonian(), but with pre-computed v values
+        so the caller can choose which time-index to evaluate.
+
+        Args:
+            z_all:     (N, B, 2, 2) incentives
+            q:         (B,)         inventory
+            ell_all:   (N, B, 2, 2) MM optimal volumes
+            v_q:       (N, B)       value at q for each step
+            v_shifted: (N, B, 2, 2) value at shifted q for each step
+
+        Returns:
+            (N, B)
+        """
+        N, B = z_all.shape[:2]
+        gamma = self.mm.gamma
+        eta = self.eta
+        sigma = self.market.sigma
+
+        # ---- Drift ----
+        z_S = -(gamma / (gamma + eta)) * q                          # (B,)
+        drift = v_q * (
+            (eta / 2) * sigma ** 2 * gamma * (z_S + q) ** 2
+            + (eta ** 2 * sigma ** 2 / 2) * z_S ** 2
+        )  # (N, B) via broadcast
+
+        # ---- ε computation ---- expand to 3 channels {l, d_lat, d_non}
+        phi = self.market.phi.unsqueeze(-1)                          # (1, 2, 1)
+        z3 = torch.cat([z_all[..., 0:1], z_all[..., 1:2],
+                         z_all[..., 1:2]], dim=-1)                   # (N, B, 2, 3)
+        ell3 = torch.cat([ell_all[..., 0:1], ell_all[..., 1:2],
+                           ell_all[..., 1:2]], dim=-1)
+
+        arg = (
+            z3
+            + ell3 * (self._spread3 + phi * self._Gamma3
+                      * q.view(1, B, 1, 1))
+            - self._Gamma3 * ell3 ** 2
+        )  # (N, B, 2, 3)
+
+        eps_raw = (1.0 / gamma) * (1.0 - torch.exp(-gamma * arg))
+
+        ell_l_flat = ell_all[..., 0].reshape(N * B, 2)              # (N*B, 2)
+        phi_d = self.market.phi_d(ell_l_flat).reshape(N, B, 2, 2)
+        eps_d = (phi_d * eps_raw[..., 1:3]).sum(dim=-1, keepdim=True)
+        eps = torch.cat([eps_raw[..., 0:1], eps_d], dim=-1)          # (N, B, 2, 2)
+
+        # ---- Arrival rates & fee-adjusted exponential ----
+        lam = self.market.lam_base(ell_l_flat).reshape(N, B, 2, 2)
+        exp_term = torch.exp(eta * (z_all - self.c * ell_all))
+
+        # ---- Jump ----
+        jump = lam * (
+            exp_term * v_shifted
+            - v_q.view(N, B, 1, 1) * (1.0 + eta * eps)
+        )
+
+        return drift + jump.sum(dim=(-2, -1))                       # (N, B)
+
     def save(
         self,
         path: str,
         epochs_trained: int,
         optimizers: dict[str, torch.optim.Optimizer] = None,
         losses: dict[str, list[float]] = None,
+        best_loss: float = None,
+        explore_std: float = None,
     ) -> None:
         ckpt = {
             "exchange_state_dict": self.state_dict(),
@@ -235,18 +405,22 @@ class Exchange(nn.Module):
             "losses": losses
             if losses is not None
             else {"value": [], "policy": [], "exploration": []},
+            "best_loss": best_loss,
+            "explore_std": explore_std,
         }
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
         torch.save(ckpt, path)
 
     def load(
         self, path: str, device: torch.device
-    ) -> tuple[int, dict | None, dict[str, list[float]]]:
+    ) -> tuple[int, dict | None, dict[str, list[float]], float | None, float | None]:
         """
         Load exchange weights and training state from a checkpoint.
 
         Returns:
-            (epochs_trained, optimizer_states, losses) — pass the latter two
-            to fit() to resume training correctly.
+            (epochs_trained, optimizer_states, losses, best_loss,
+             explore_std) — pass these to fit() to resume training
+             correctly.
         """
         ckpt = torch.load(path, map_location="cpu")
 
@@ -260,6 +434,8 @@ class Exchange(nn.Module):
             ckpt.get("epochs_trained", 0),
             ckpt.get("optimizer_states", None),
             ckpt.get("losses", {"value": [], "policy": [], "exploration": []}),
+            ckpt.get("best_loss", None),
+            ckpt.get("explore_std", None),
         )
 
     def fit(
@@ -268,6 +444,11 @@ class Exchange(nn.Module):
         lr_v: float,
         lr_z: float,
         lr_z_explore: float,
+        n_critic_steps: int = 5,
+        clip_grad_norm: float = None,
+        explore_std: float = 1.0,
+        explore_std_final: float = None,
+        explore_anneal_epochs: int = None,
         seed: int = None,
         save_dir: Path = None,
         save_per: int = 50,
@@ -276,25 +457,30 @@ class Exchange(nn.Module):
         start_epoch: int = 1,
         optimizer_states: dict = None,
         prior_losses: dict[str, list[float]] = None,
-    ) -> dict[str, list[float]]:
+        best_loss: float = None,
+    ) -> tuple[dict[str, list[float]], float]:
         """
         Train the exchange actor-critic networks.
 
-        Three optimizers:
-          opt_v:         updates critic_nets   (lr_v)
-          opt_z:         updates actor_nets    (lr_z)       — exploitation
-          opt_z_explore: updates actor_nets    (lr_z_explore) — exploration
+        All N time steps are updated in parallel each epoch via batched
+        forward/backward passes (one per phase), instead of a sequential
+        loop over time steps.
 
-        Each epoch loops backward from t_{N-1} to t_0 performing:
-          1. Critic update:       fit v_i(q) to Bellman target
-                                  v_{i+1}(q) + Δt·H(z, q, ℓ, v_{i+1})
-          2. Actor exploitation:  maximise H(z, q, ℓ, v_i)  w.r.t. z
-          3. Actor exploration:   push policy toward perturbations
-                                  that improve H
+        Per epoch:
+          Phase 1-2 (repeated n_critic_steps times):
+            compute Bellman targets and update all N critics
+          Phase 3:  update all N actors (exploitation) in one pass
+          Phase 4:  update all N actors (exploration) in one pass
+
+        The inner critic loop compensates for the parallel (Jacobi) update
+        structure: the paper's sequential backward sweep propagates the
+        terminal condition v(T)=-1 in one pass, but parallel updates need
+        multiple passes for the same information to propagate.
 
         Returns:
-            dict with keys "value", "policy", "exploration",
-            each a list of per-epoch losses.
+            Tuple of (losses, best_loss) where losses is a dict with keys
+            "value", "policy", "exploration" (each a list of per-epoch losses)
+            and best_loss is the best (lowest) value loss seen.
         """
         if seed is not None:
             torch.manual_seed(seed)
@@ -302,7 +488,10 @@ class Exchange(nn.Module):
         device = self.eta.device
         dtype = self.eta.dtype
 
-        # --- Three optimizers ---
+        # --- Three optimizers: critic, actor-exploit, actor-explore ---
+        # Separate Adam for exploit vs explore because they receive
+        # fundamentally different gradient types (first-order backprop vs
+        # zeroth-order score function) and have independent learning rates.
         opt_v = torch.optim.Adam(self.critic_nets.parameters(), lr=lr_v)
         opt_z = torch.optim.Adam(self.actor_nets.parameters(), lr=lr_z)
         opt_z_explore = torch.optim.Adam(self.actor_nets.parameters(), lr=lr_z_explore)
@@ -310,13 +499,10 @@ class Exchange(nn.Module):
         if optimizer_states is not None:
             opt_v.load_state_dict(optimizer_states["opt_v"])
             opt_z.load_state_dict(optimizer_states["opt_z"])
-            opt_z_explore.load_state_dict(optimizer_states["opt_z_explore"])
+            if "opt_z_explore" in optimizer_states:
+                opt_z_explore.load_state_dict(optimizer_states["opt_z_explore"])
 
-        optimizers = {
-            "opt_v": opt_v,
-            "opt_z": opt_z,
-            "opt_z_explore": opt_z_explore,
-        }
+        optimizers = {"opt_v": opt_v, "opt_z": opt_z, "opt_z_explore": opt_z_explore}
 
         final_epoch = start_epoch + epochs - 1
         losses: dict[str, list[float]] = {
@@ -326,6 +512,17 @@ class Exchange(nn.Module):
             if prior_losses
             else [],
         }
+        best_loss = best_loss if best_loss is not None else float("inf")
+
+        # --- Exploration std annealing ---
+        # Linear anneal: std goes from explore_std (initial) to
+        # explore_std_final over explore_anneal_epochs, then stays at
+        # the final value.  If no final value is given, std is constant.
+        anneal = explore_std_final is not None and explore_anneal_epochs is not None
+        if anneal:
+            std_init = explore_std
+            std_final = explore_std_final
+            anneal_total = explore_anneal_epochs
 
         def _log(msg: str) -> None:
             if logger is not None:
@@ -335,77 +532,176 @@ class Exchange(nn.Module):
             f"Training epochs {start_epoch} -> {final_epoch} "
             f"(lr_v={lr_v}, lr_z={lr_z}, lr_z_explore={lr_z_explore}, B={self.B})"
         )
+        if anneal:
+            _log(
+                f"Explore std annealing: {std_init} -> {std_final} "
+                f"over {anneal_total} epochs (linear)"
+            )
+        else:
+            _log(f"Explore std: {explore_std} (constant)")
+
+        N, B = self.N, self.B
+        phi = self.market.phi.unsqueeze(-1)  # (1, 2, 1) — broadcasts to (N, B, 2, *)
 
         for epoch in range(start_epoch, start_epoch + epochs):
             # Sample q ~ Uniform([-q_bar, q_bar])
             q = (
-                2.0 * torch.rand((self.B,), device=device, dtype=dtype) - 1.0
+                2.0 * torch.rand((B,), device=device, dtype=dtype) - 1.0
             ) * self.mm.q_bar
+            q_rep = q.unsqueeze(0).expand(N, -1).reshape(N * B)  # (N*B,)
 
-            epoch_v = 0.0
-            epoch_z = 0.0
-            epoch_e = 0.0
-
-            for i in range(self.N - 1, -1, -1):
-                # --- 1. Critic (value) update ---
-                # Target is fully detached: v_{i+1}(q) + Δt·H(z, q, ℓ, v_{i+1})
+            # ==============================================================
+            # Phases 1-2: Critic inner loop
+            #
+            # Repeat target computation + critic update n_critic_steps times.
+            # Each pass recomputes targets from the UPDATED critics, so the
+            # terminal condition v(T)=-1 propagates backward through
+            # multiple steps within a single epoch.
+            # ==============================================================
+            for _cv in range(n_critic_steps):
+                # Phase 1: Compute Bellman targets  (no_grad)
                 with torch.no_grad():
-                    z4 = self.policy(q, i)
-                    ell4 = self.mm.controls(z4=z4, q=q)
-                    z = self.mm._pack_z(z4)
-                    ell = self.mm._pack_ell(ell4)
-                    target = self.value(q, i + 1) + self.dt * self._hamiltonian(
-                        z=z, q=q, ell=ell, i=i + 1
-                    )
+                    z4_all = self._policy_all(q)                         # (N, B, 4)
+                    z_all, ell_all = self._controls_all(z4_all, q_rep)
 
-                v_i = self.value(q, i)
-                v_loss = ((v_i - target) ** 2).mean()
+                q_shifted = q.view(1, B, 1, 1) - phi * ell_all      # (N, B, 2, 2)
+
+                v_q_all = self._value_all(q)                         # (N, B)
+                v_shifted_all = self._value_all_shifted(q_shifted)   # (N, B, 2, 2)
+
+                terminal_q = -torch.ones(1, B, device=device, dtype=dtype)
+                terminal_qs = -torch.ones(1, B, 2, 2, device=device, dtype=dtype)
+                v_q_next = torch.cat([v_q_all[1:], terminal_q])
+                v_shifted_next = torch.cat([v_shifted_all[1:], terminal_qs])
+
+                H_target = self._hamiltonian_all(
+                    z_all, q, ell_all, v_q_next, v_shifted_next
+                )
+                targets = v_q_next + self.dt * H_target              # (N, B)
+
+                # Phase 2: Critic update
+                v_pred = self._value_all(q)                              # (N, B)
+                v_loss = ((v_pred - targets) ** 2).mean()
 
                 opt_v.zero_grad(set_to_none=True)
                 v_loss.backward()
+                if clip_grad_norm is not None:
+                    torch.nn.utils.clip_grad_norm_(
+                        self.critic_nets.parameters(), max_norm=clip_grad_norm
+                    )
                 opt_v.step()
-                epoch_v += v_loss.item()
 
-                # --- 2. Actor exploitation update ---
-                # Maximise H w.r.t. z  →  minimise -H
-                z4 = self.policy(q, i)
-                ell4 = self.mm.controls(z4=z4, q=q)
-                z = self.mm._pack_z(z4)
-                ell = self.mm._pack_ell(ell4)
-                h = self._hamiltonian(z=z, q=q, ell=ell, i=i)
-                z_loss = -h.mean()
+            # ==============================================================
+            # Phase 3: Actor exploitation — maximise H w.r.t. z
+            # ==============================================================
+            # Freeze critic params so backward skips their gradients,
+            # but input-gradients (∂v/∂q_shifted) still flow to the actor.
+            self.critic_nets.requires_grad_(False)
 
-                opt_z.zero_grad(set_to_none=True)
-                z_loss.backward()
-                opt_z.step()
-                epoch_z += z_loss.item()
+            z4_all = self._policy_all(q)                             # (N, B, 4)
+            z_all, ell_all = self._controls_all(z4_all, q_rep)
+            q_shifted = q.view(1, B, 1, 1) - phi * ell_all
 
-                # --- 3. Actor exploration update ---
-                # Re-evaluate after exploitation step updated the actor
-                z4 = self.policy(q, i)
-                ell4 = self.mm.controls(z4=z4, q=q)
-                z = self.mm._pack_z(z4)
-                ell = self.mm._pack_ell(ell4)
+            with torch.no_grad():
+                v_q_det = self._value_all(q)                         # (N, B)
+            v_shifted_live = self._value_all_shifted(q_shifted)      # in graph
 
-                perturbation = torch.randn_like(z4)  # (B, 4)
-                z4_pert = z4 + perturbation
-                ell4_pert = self.mm.controls(z4=z4_pert, q=q)
-                z_pert = self.mm._pack_z(z4_pert)
-                ell_pert = self.mm._pack_ell(ell4_pert)
+            H_exploit = self._hamiltonian_all(
+                z_all, q, ell_all, v_q_det, v_shifted_live
+            )
+            z_loss = -H_exploit.mean()
 
-                h_base = self._hamiltonian(z=z, q=q, ell=ell, i=i)
-                h_pert = self._hamiltonian(z=z_pert, q=q, ell=ell_pert, i=i)
-                e_loss = -(h_pert - h_base).mean()
+            opt_z.zero_grad(set_to_none=True)
+            z_loss.backward()
+            if clip_grad_norm is not None:
+                torch.nn.utils.clip_grad_norm_(
+                    self.actor_nets.parameters(), max_norm=clip_grad_norm
+                )
+            opt_z.step()
 
-                opt_z_explore.zero_grad(set_to_none=True)
-                e_loss.backward()
-                opt_z_explore.step()
-                epoch_e += e_loss.item()
+            # ==============================================================
+            # Phase 4: Actor exploration — score function estimator
+            #
+            # Paper: ω += μ̂^z · (1/K) Σ_k ε_k · ∇_ω z_t(q_k)
+            #                         · [U^c(z+ε,...) − U^c(z,...)]
+            #
+            # The advantage (H_pert − H_base) is a detached scalar weight;
+            # gradients flow only through the policy output z4_all via the
+            # surrogate loss:  −(advantage · ε · z).mean()
+            # ==============================================================
+            z4_all = self._policy_all(q)                             # post-exploit
 
-            # Record epoch-averaged losses
-            losses["value"].append(epoch_v / self.N)
-            losses["policy"].append(epoch_z / self.N)
-            losses["exploration"].append(epoch_e / self.N)
+            # Compute current exploration std (linear annealing)
+            if anneal:
+                progress = min((epoch - 1) / max(anneal_total - 1, 1), 1.0)
+                current_std = std_init + (std_final - std_init) * progress
+            else:
+                current_std = explore_std
+
+            perturbation = current_std * torch.randn_like(z4_all)
+            z4_pert = (z4_all.detach() + perturbation).clamp(
+                -self.mm.z_bar, self.mm.z_bar
+            )
+
+            with torch.no_grad():
+                z_all, ell_all = self._controls_all(
+                    z4_all.detach(), q_rep
+                )
+                z_pert_all, ell_pert_all = self._controls_all(z4_pert, q_rep)
+
+                qs_base = q.view(1, B, 1, 1) - phi * ell_all
+                qs_pert = q.view(1, B, 1, 1) - phi * ell_pert_all
+
+                v_q_det = self._value_all(q)
+                v_sh_base = self._value_all_shifted(qs_base)
+                v_sh_pert = self._value_all_shifted(qs_pert)
+
+                H_base = self._hamiltonian_all(
+                    z_all, q, ell_all, v_q_det, v_sh_base
+                )
+                H_pert = self._hamiltonian_all(
+                    z_pert_all, q, ell_pert_all, v_q_det, v_sh_pert
+                )
+                advantage = H_pert - H_base                          # (N, B)
+
+            # Score function surrogate: −advantage · ε · z  (gradient ascent on H)
+            e_loss = -(
+                advantage * (perturbation * z4_all).sum(dim=-1)
+            ).mean()
+
+            opt_z_explore.zero_grad(set_to_none=True)
+            e_loss.backward()
+            if clip_grad_norm is not None:
+                torch.nn.utils.clip_grad_norm_(
+                    self.actor_nets.parameters(), max_norm=clip_grad_norm
+                )
+            opt_z_explore.step()
+
+            # Unfreeze critic for next epoch
+            self.critic_nets.requires_grad_(True)
+
+            # ==============================================================
+            # Logging / checkpointing
+            # ==============================================================
+            losses["value"].append(v_loss.item())
+            losses["policy"].append(z_loss.item())
+            losses["exploration"].append(e_loss.item())
+
+            z_loss_val = losses["policy"][-1]
+            if save_dir is not None and z_loss_val < best_loss:
+                best_loss = z_loss_val
+                best_path = save_dir / "best_model.pt"
+                self.save(
+                    path=best_path,
+                    epochs_trained=epoch,
+                    optimizers=optimizers,
+                    losses=losses,
+                    best_loss=best_loss,
+                    explore_std=current_std,
+                )
+                _log(f"  New best model (z_loss={best_loss:.6f}) saved -> {best_path}")
+            elif z_loss_val < best_loss:
+                best_loss = z_loss_val
 
             if epoch % log_per == 0 or epoch == final_epoch:
                 _log(
@@ -415,13 +711,17 @@ class Exchange(nn.Module):
                     f"e_loss: {losses['exploration'][-1]:.6f}"
                 )
 
-            if save_dir is not None and (epoch % save_per == 0 or epoch == final_epoch):
+            if save_dir is not None and (
+                epoch % save_per == 0 or epoch == final_epoch
+            ):
                 ckpt_path = save_dir / f"checkpoint_epoch_{epoch}.pt"
                 self.save(
                     path=ckpt_path,
                     epochs_trained=epoch,
                     optimizers=optimizers,
                     losses=losses,
+                    best_loss=best_loss,
+                    explore_std=current_std,
                 )
                 _log(f"  Checkpoint saved -> {ckpt_path}")
 
@@ -432,7 +732,8 @@ class Exchange(nn.Module):
             f"avg z_loss: "
             f"{sum(losses['policy'][-min(log_per, epochs) :]) / min(log_per, epochs):.6f} | "
             f"avg e_loss: "
-            f"{sum(losses['exploration'][-min(log_per, epochs) :]) / min(log_per, epochs):.6f}"
+            f"{sum(losses['exploration'][-min(log_per, epochs) :]) / min(log_per, epochs):.6f} | "
+            f"best z_loss: {best_loss:.6f}"
         )
 
-        return losses
+        return losses, best_loss

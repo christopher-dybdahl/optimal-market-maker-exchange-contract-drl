@@ -5,7 +5,7 @@
     "Gamma_d": 5e-5,
     "theta_l": 0.15,
     "theta_d": 0.15,
-    "tick_size": 0.03,
+    "tick_size": 0.04,
     "sigma": 0.1,
     "eps": 1e-8
 }

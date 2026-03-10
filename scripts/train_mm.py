@@ -1,4 +1,3 @@
-import glob
 import json
 import os
 from argparse import ArgumentParser
@@ -136,16 +135,16 @@ def main():
     start_epoch = 1
     optimizer_state = None
     prior_losses = []
-    ckpt_pattern = str(save_dir / "checkpoint_epoch_*.pt")
+    best_loss = None
     existing_ckpts = sorted(
-        glob.glob(ckpt_pattern),
-        key=lambda p: int(Path(p).stem.replace("checkpoint_epoch_", "")),
+        save_dir.glob("checkpoint_epoch_*.pt"),
+        key=lambda p: int(p.stem.replace("checkpoint_epoch_", "")),
     )
 
     if args.load_if_exists and existing_ckpts:
         latest_ckpt = Path(existing_ckpts[-1])
         logger.log(f"Loading checkpoint: {latest_ckpt}")
-        epochs_trained, optimizer_state, prior_losses = mm.load(
+        epochs_trained, optimizer_state, prior_losses, best_loss = mm.load(
             path=latest_ckpt, device=device
         )
         start_epoch = epochs_trained + 1
@@ -179,7 +178,7 @@ def main():
 
     if args.train:
         logger.log("Training")
-        all_losses = mm.fit(
+        all_losses, best_loss = mm.fit(
             epochs=args.epochs,
             lr=args.lr,
             save_dir=save_dir,
@@ -189,6 +188,7 @@ def main():
             start_epoch=start_epoch,
             optimizer_state=optimizer_state,
             prior_losses=prior_losses,
+            best_loss=best_loss,
         )
     else:
         all_losses = prior_losses

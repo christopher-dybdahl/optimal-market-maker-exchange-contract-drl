@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 
 _ACTS = {
@@ -55,3 +56,79 @@ class FCnet(nn.Module):
 
     def forward(self, y):
         return self.net(y)
+
+
+class BatchedFCnet(nn.Module):
+    """
+    N independent copies of the same FC architecture, stored as batched
+    weight tensors and evaluated simultaneously via torch.bmm.
+    """
+
+    def __init__(
+        self,
+        n: int,
+        layers: list[int],
+        activation: str,
+        output_activation: str,
+    ):
+        super().__init__()
+        self.n = n
+        self.num_layers = len(layers) - 1
+
+        self.act = _ACTS[activation.lower()]()
+        self.out_act = _ACTS[output_activation.lower()]()
+
+        gain = _GAINS.get(activation.lower(), 1.0)
+        out_gain = _GAINS.get(output_activation.lower(), 1.0)
+
+        self.weights = nn.ParameterList()
+        self.biases = nn.ParameterList()
+
+        for idx, (in_f, out_f) in enumerate(zip(layers[:-1], layers[1:])):
+            is_last = idx == self.num_layers - 1
+            g = (0.1 * out_gain) if is_last else gain
+
+            W = torch.empty(n, out_f, in_f)
+            b = torch.zeros(n, out_f)
+            for k in range(n):
+                nn.init.xavier_uniform_(W[k], gain=g)
+
+            self.weights.append(nn.Parameter(W))
+            self.biases.append(nn.Parameter(b))
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Evaluate all N networks simultaneously.
+
+        Args:
+            x: (N, B, in_features)
+
+        Returns:
+            (N, B, out_features)
+        """
+        for idx, (W, b) in enumerate(zip(self.weights, self.biases)):
+            x = torch.bmm(x, W.transpose(1, 2)) + b.unsqueeze(1)
+            if idx < self.num_layers - 1:
+                x = self.act(x)
+            else:
+                x = self.out_act(x)
+        return x
+
+    def forward_single(self, x: torch.Tensor, i: int) -> torch.Tensor:
+        """
+        Evaluate only the i-th network.
+
+        Args:
+            x: (B, in_features)
+            i: network index
+
+        Returns:
+            (B, out_features)
+        """
+        for idx, (W, b) in enumerate(zip(self.weights, self.biases)):
+            x = x @ W[i].t() + b[i]
+            if idx < self.num_layers - 1:
+                x = self.act(x)
+            else:
+                x = self.out_act(x)
+        return x
