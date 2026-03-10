@@ -1,0 +1,760 @@
+======================================================================
+Run configuration
+  device        : cuda
+  batch_size    : 4096
+  model_name    : '0.04'
+  train         : True
+  load_if_exists: False (will start from scratch)
+  epochs        : 10000
+  lr_v          : 0.0001
+  lr_z          : 0.0001
+  lr_z_explore  : 0.0001
+  n_critic_steps: 1
+  clip_grad_norm: 1
+  explore_std   : 1
+  explore_final : 0
+  anneal_epochs : 500
+  save_per      : 50
+  log_per       : 10
+======================================================================
+Loading exchange config from (config/) /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/config/exchange_cfg.json
+Loading pre-trained MarketMaker from /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model
+Loading market config from /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/market_cfg.json
+Market params:
+  A (lit, dark)      : [5000.0, 3000.0]
+  c (theta/sigma)    : [1.5, 1.5]
+  Gamma (lit, dark)  : [9.999999747378752e-05, 4.999999873689376e-05]
+  sigma              : 0.1
+  tick_size          : 0.04
+  half_tick          : 0.02
+  eps                : 1e-08
+======================================================================
+Loading market maker config from /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/market_maker_cfg.json
+Loading MM checkpoint: /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+MM trained for 80903 epochs
+MM parameters frozen
+======================================================================
+Exchange params:
+  eta                : 0.02
+  c_l                : 0.05
+  c_d                : 0.01
+  T                  : 1.0
+  N                  : 1000
+  actor_architecture : fc_time
+  actor_layers       : [2, 32, 32, 4]
+  critic_architecture: fc_time
+  critic_layers      : [2, 32, 32, 1]
+======================================================================
+load_if_exists=False - starting from scratch
+======================================================================
+Saving configuration files...
+Configuration saved to /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model
+======================================================================
+Training
+Training epochs 1 -> 10000 (lr_v=0.0001, lr_z=0.0001, lr_z_explore=0.0001, B=4096)
+Explore std annealing: 1 -> 0 over 500 epochs (linear)
+  New best model (z_loss=13.408016) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=12.949423) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=11.651799) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  Epoch    10/10000 | v_loss: 0.001085 | z_loss: 11.820875 | e_loss: -0.062586
+  New best model (z_loss=11.191984) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=10.970227) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=10.461509) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=10.287596) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=10.089967) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  Epoch    20/10000 | v_loss: 0.000606 | z_loss: 10.089967 | e_loss: -0.099704
+  New best model (z_loss=9.240600) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=9.112906) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=8.852283) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=8.538777) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=8.297329) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=7.894991) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=7.705781) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  Epoch    30/10000 | v_loss: 0.000348 | z_loss: 7.705781 | e_loss: -0.091741
+  New best model (z_loss=7.495389) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=7.415544) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=7.035720) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=6.782339) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=6.641180) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=6.391333) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=6.215244) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=5.891735) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=5.802715) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=5.507569) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  Epoch    40/10000 | v_loss: 0.000241 | z_loss: 5.507569 | e_loss: -0.062949
+  New best model (z_loss=5.311714) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=5.118602) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=4.899907) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=4.711001) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=4.495653) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=4.277105) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=4.073199) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=3.889363) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=3.675189) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=3.507652) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  Epoch    50/10000 | v_loss: 0.000205 | z_loss: 3.507652 | e_loss: -0.038464
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_50.pt
+  New best model (z_loss=3.311676) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=3.142635) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=2.928170) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=2.767976) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=2.615087) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=2.433612) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=2.267816) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=2.119716) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=1.960023) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=1.798989) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  Epoch    60/10000 | v_loss: 0.000192 | z_loss: 1.798989 | e_loss: -0.024050
+  New best model (z_loss=1.669668) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=1.501080) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=1.427913) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=1.203461) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=1.090665) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=0.974861) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=0.835354) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=0.758201) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=0.623826) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=0.521833) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  Epoch    70/10000 | v_loss: 0.000186 | z_loss: 0.521833 | e_loss: -0.013407
+  New best model (z_loss=0.388335) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=0.286188) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=0.172960) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=0.100914) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-0.019793) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-0.084598) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-0.198733) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-0.265889) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-0.358742) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-0.428652) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  Epoch    80/10000 | v_loss: 0.000182 | z_loss: -0.428652 | e_loss: -0.002605
+  New best model (z_loss=-0.496787) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-0.577230) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-0.643314) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-0.662596) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-0.762758) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-0.805941) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-0.861132) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-0.895353) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-0.945331) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-1.012770) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  Epoch    90/10000 | v_loss: 0.000181 | z_loss: -1.012770 | e_loss: 0.008854
+  New best model (z_loss=-1.057000) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-1.099833) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-1.129308) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-1.204368) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-1.207478) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-1.243029) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-1.264182) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-1.317839) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-1.344864) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  Epoch   100/10000 | v_loss: 0.000177 | z_loss: -1.341504 | e_loss: 0.016292
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_100.pt
+  New best model (z_loss=-1.353364) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-1.398935) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-1.414986) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-1.431092) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-1.458169) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-1.465682) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-1.485332) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-1.523962) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-1.532025) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  Epoch   110/10000 | v_loss: 0.000175 | z_loss: -1.532025 | e_loss: 0.019757
+  New best model (z_loss=-1.534240) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-1.551827) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-1.593657) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-1.603939) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  Epoch   120/10000 | v_loss: 0.000172 | z_loss: -1.603939 | e_loss: 0.019280
+  New best model (z_loss=-1.607317) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  New best model (z_loss=-1.618276) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/best_model.pt
+  Epoch   130/10000 | v_loss: 0.000170 | z_loss: -1.593212 | e_loss: 0.018216
+  Epoch   140/10000 | v_loss: 0.000167 | z_loss: -1.549564 | e_loss: 0.014747
+  Epoch   150/10000 | v_loss: 0.000163 | z_loss: -1.520305 | e_loss: 0.011642
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_150.pt
+  Epoch   160/10000 | v_loss: 0.000160 | z_loss: -1.525378 | e_loss: 0.009079
+  Epoch   170/10000 | v_loss: 0.000159 | z_loss: -1.456339 | e_loss: 0.006776
+  Epoch   180/10000 | v_loss: 0.000156 | z_loss: -1.430648 | e_loss: 0.004587
+  Epoch   190/10000 | v_loss: 0.000155 | z_loss: -1.402567 | e_loss: 0.003005
+  Epoch   200/10000 | v_loss: 0.000153 | z_loss: -1.403625 | e_loss: 0.001241
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_200.pt
+  Epoch   210/10000 | v_loss: 0.000151 | z_loss: -1.350904 | e_loss: -0.000255
+  Epoch   220/10000 | v_loss: 0.000150 | z_loss: -1.318399 | e_loss: -0.001638
+  Epoch   230/10000 | v_loss: 0.000149 | z_loss: -1.292000 | e_loss: -0.002550
+  Epoch   240/10000 | v_loss: 0.000148 | z_loss: -1.268676 | e_loss: -0.003499
+  Epoch   250/10000 | v_loss: 0.000147 | z_loss: -1.247735 | e_loss: -0.004026
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_250.pt
+  Epoch   260/10000 | v_loss: 0.000146 | z_loss: -1.203453 | e_loss: -0.004607
+  Epoch   270/10000 | v_loss: 0.000146 | z_loss: -1.178284 | e_loss: -0.004951
+  Epoch   280/10000 | v_loss: 0.000145 | z_loss: -1.152970 | e_loss: -0.004906
+  Epoch   290/10000 | v_loss: 0.000144 | z_loss: -1.137993 | e_loss: -0.004599
+  Epoch   300/10000 | v_loss: 0.000143 | z_loss: -1.114925 | e_loss: -0.004561
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_300.pt
+  Epoch   310/10000 | v_loss: 0.000142 | z_loss: -1.072841 | e_loss: -0.004147
+  Epoch   320/10000 | v_loss: 0.000142 | z_loss: -1.062932 | e_loss: -0.003773
+  Epoch   330/10000 | v_loss: 0.000141 | z_loss: -1.010793 | e_loss: -0.003352
+  Epoch   340/10000 | v_loss: 0.000140 | z_loss: -0.998076 | e_loss: -0.002846
+  Epoch   350/10000 | v_loss: 0.000139 | z_loss: -0.990549 | e_loss: -0.002432
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_350.pt
+  Epoch   360/10000 | v_loss: 0.000138 | z_loss: -0.933544 | e_loss: -0.002132
+  Epoch   370/10000 | v_loss: 0.000137 | z_loss: -0.933947 | e_loss: -0.001578
+  Epoch   380/10000 | v_loss: 0.000136 | z_loss: -0.882513 | e_loss: -0.001496
+  Epoch   390/10000 | v_loss: 0.000136 | z_loss: -0.902163 | e_loss: -0.001116
+  Epoch   400/10000 | v_loss: 0.000134 | z_loss: -0.851071 | e_loss: -0.000940
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_400.pt
+  Epoch   410/10000 | v_loss: 0.000133 | z_loss: -0.817571 | e_loss: -0.000838
+  Epoch   420/10000 | v_loss: 0.000133 | z_loss: -0.802124 | e_loss: -0.000673
+  Epoch   430/10000 | v_loss: 0.000132 | z_loss: -0.784929 | e_loss: -0.000505
+  Epoch   440/10000 | v_loss: 0.000132 | z_loss: -0.779037 | e_loss: -0.000418
+  Epoch   450/10000 | v_loss: 0.000131 | z_loss: -0.770079 | e_loss: -0.000304
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_450.pt
+  Epoch   460/10000 | v_loss: 0.000130 | z_loss: -0.713619 | e_loss: -0.000223
+  Epoch   470/10000 | v_loss: 0.000130 | z_loss: -0.693350 | e_loss: -0.000135
+  Epoch   480/10000 | v_loss: 0.000130 | z_loss: -0.725403 | e_loss: -0.000061
+  Epoch   490/10000 | v_loss: 0.000131 | z_loss: -0.718397 | e_loss: -0.000016
+  Epoch   500/10000 | v_loss: 0.000130 | z_loss: -0.705615 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_500.pt
+  Epoch   510/10000 | v_loss: 0.000131 | z_loss: -0.684567 | e_loss: -0.000000
+  Epoch   520/10000 | v_loss: 0.000131 | z_loss: -0.694379 | e_loss: -0.000000
+  Epoch   530/10000 | v_loss: 0.000131 | z_loss: -0.628273 | e_loss: -0.000000
+  Epoch   540/10000 | v_loss: 0.000131 | z_loss: -0.633947 | e_loss: -0.000000
+  Epoch   550/10000 | v_loss: 0.000133 | z_loss: -0.650296 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_550.pt
+  Epoch   560/10000 | v_loss: 0.000134 | z_loss: -0.629346 | e_loss: -0.000000
+  Epoch   570/10000 | v_loss: 0.000135 | z_loss: -0.614195 | e_loss: -0.000000
+  Epoch   580/10000 | v_loss: 0.000137 | z_loss: -0.637641 | e_loss: -0.000000
+  Epoch   590/10000 | v_loss: 0.000140 | z_loss: -0.646822 | e_loss: -0.000000
+  Epoch   600/10000 | v_loss: 0.000144 | z_loss: -0.611707 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_600.pt
+  Epoch   610/10000 | v_loss: 0.000160 | z_loss: -0.614972 | e_loss: -0.000000
+  Epoch   620/10000 | v_loss: 0.000214 | z_loss: -0.651648 | e_loss: -0.000000
+  Epoch   630/10000 | v_loss: 0.000268 | z_loss: -0.717078 | e_loss: -0.000000
+  Epoch   640/10000 | v_loss: 0.000303 | z_loss: -0.746255 | e_loss: -0.000000
+  Epoch   650/10000 | v_loss: 0.000313 | z_loss: -0.755834 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_650.pt
+  Epoch   660/10000 | v_loss: 0.000302 | z_loss: -0.767491 | e_loss: -0.000000
+  Epoch   670/10000 | v_loss: 0.000288 | z_loss: -0.783121 | e_loss: -0.000000
+  Epoch   680/10000 | v_loss: 0.000284 | z_loss: -0.779458 | e_loss: -0.000000
+  Epoch   690/10000 | v_loss: 0.000289 | z_loss: -0.752611 | e_loss: -0.000000
+  Epoch   700/10000 | v_loss: 0.000296 | z_loss: -0.801106 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_700.pt
+  Epoch   710/10000 | v_loss: 0.000303 | z_loss: -0.802984 | e_loss: -0.000000
+  Epoch   720/10000 | v_loss: 0.000311 | z_loss: -0.831562 | e_loss: -0.000000
+  Epoch   730/10000 | v_loss: 0.000301 | z_loss: -0.837229 | e_loss: -0.000000
+  Epoch   740/10000 | v_loss: 0.000294 | z_loss: -0.827372 | e_loss: -0.000000
+  Epoch   750/10000 | v_loss: 0.000290 | z_loss: -0.814786 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_750.pt
+  Epoch   760/10000 | v_loss: 0.000286 | z_loss: -0.798138 | e_loss: -0.000000
+  Epoch   770/10000 | v_loss: 0.000285 | z_loss: -0.792884 | e_loss: -0.000000
+  Epoch   780/10000 | v_loss: 0.000285 | z_loss: -0.773625 | e_loss: -0.000000
+  Epoch   790/10000 | v_loss: 0.000289 | z_loss: -0.742255 | e_loss: -0.000000
+  Epoch   800/10000 | v_loss: 0.000277 | z_loss: -0.753310 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_800.pt
+  Epoch   810/10000 | v_loss: 0.000277 | z_loss: -0.717411 | e_loss: -0.000000
+  Epoch   820/10000 | v_loss: 0.000261 | z_loss: -0.734324 | e_loss: -0.000000
+  Epoch   830/10000 | v_loss: 0.000260 | z_loss: -0.708568 | e_loss: -0.000000
+  Epoch   840/10000 | v_loss: 0.000251 | z_loss: -0.687367 | e_loss: -0.000000
+  Epoch   850/10000 | v_loss: 0.000246 | z_loss: -0.656821 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_850.pt
+  Epoch   860/10000 | v_loss: 0.000232 | z_loss: -0.632915 | e_loss: -0.000000
+  Epoch   870/10000 | v_loss: 0.000225 | z_loss: -0.630657 | e_loss: -0.000000
+  Epoch   880/10000 | v_loss: 0.000213 | z_loss: -0.626344 | e_loss: -0.000000
+  Epoch   890/10000 | v_loss: 0.000199 | z_loss: -0.581238 | e_loss: -0.000000
+  Epoch   900/10000 | v_loss: 0.000178 | z_loss: -0.563172 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_900.pt
+  Epoch   910/10000 | v_loss: 0.000156 | z_loss: -0.520944 | e_loss: -0.000000
+  Epoch   920/10000 | v_loss: 0.000141 | z_loss: -0.514981 | e_loss: -0.000000
+  Epoch   930/10000 | v_loss: 0.000133 | z_loss: -0.479797 | e_loss: -0.000000
+  Epoch   940/10000 | v_loss: 0.000130 | z_loss: -0.494252 | e_loss: -0.000000
+  Epoch   950/10000 | v_loss: 0.000128 | z_loss: -0.477232 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_950.pt
+  Epoch   960/10000 | v_loss: 0.000128 | z_loss: -0.488991 | e_loss: -0.000000
+  Epoch   970/10000 | v_loss: 0.000128 | z_loss: -0.470428 | e_loss: -0.000000
+  Epoch   980/10000 | v_loss: 0.000130 | z_loss: -0.471352 | e_loss: -0.000000
+  Epoch   990/10000 | v_loss: 0.000130 | z_loss: -0.458803 | e_loss: -0.000000
+  Epoch  1000/10000 | v_loss: 0.000132 | z_loss: -0.461441 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_1000.pt
+  Epoch  1010/10000 | v_loss: 0.000132 | z_loss: -0.438475 | e_loss: -0.000000
+  Epoch  1020/10000 | v_loss: 0.000133 | z_loss: -0.448928 | e_loss: -0.000000
+  Epoch  1030/10000 | v_loss: 0.000133 | z_loss: -0.442007 | e_loss: -0.000000
+  Epoch  1040/10000 | v_loss: 0.000134 | z_loss: -0.448291 | e_loss: -0.000000
+  Epoch  1050/10000 | v_loss: 0.000135 | z_loss: -0.445271 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_1050.pt
+  Epoch  1060/10000 | v_loss: 0.000136 | z_loss: -0.443714 | e_loss: -0.000000
+  Epoch  1070/10000 | v_loss: 0.000135 | z_loss: -0.430427 | e_loss: -0.000000
+  Epoch  1080/10000 | v_loss: 0.000136 | z_loss: -0.440699 | e_loss: -0.000000
+  Epoch  1090/10000 | v_loss: 0.000136 | z_loss: -0.422014 | e_loss: -0.000000
+  Epoch  1100/10000 | v_loss: 0.000136 | z_loss: -0.408622 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_1100.pt
+  Epoch  1110/10000 | v_loss: 0.000137 | z_loss: -0.421123 | e_loss: -0.000000
+  Epoch  1120/10000 | v_loss: 0.000137 | z_loss: -0.414783 | e_loss: -0.000000
+  Epoch  1130/10000 | v_loss: 0.000137 | z_loss: -0.394616 | e_loss: -0.000000
+  Epoch  1140/10000 | v_loss: 0.000138 | z_loss: -0.404248 | e_loss: -0.000000
+  Epoch  1150/10000 | v_loss: 0.000138 | z_loss: -0.412936 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_1150.pt
+  Epoch  1160/10000 | v_loss: 0.000137 | z_loss: -0.386619 | e_loss: -0.000000
+  Epoch  1170/10000 | v_loss: 0.000139 | z_loss: -0.403482 | e_loss: -0.000000
+  Epoch  1180/10000 | v_loss: 0.000138 | z_loss: -0.401882 | e_loss: -0.000000
+  Epoch  1190/10000 | v_loss: 0.000138 | z_loss: -0.399871 | e_loss: -0.000000
+  Epoch  1200/10000 | v_loss: 0.000138 | z_loss: -0.392246 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_1200.pt
+  Epoch  1210/10000 | v_loss: 0.000138 | z_loss: -0.394509 | e_loss: -0.000000
+  Epoch  1220/10000 | v_loss: 0.000137 | z_loss: -0.378273 | e_loss: -0.000000
+  Epoch  1230/10000 | v_loss: 0.000138 | z_loss: -0.390561 | e_loss: -0.000000
+  Epoch  1240/10000 | v_loss: 0.000138 | z_loss: -0.367761 | e_loss: -0.000000
+  Epoch  1250/10000 | v_loss: 0.000138 | z_loss: -0.378878 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_1250.pt
+  Epoch  1260/10000 | v_loss: 0.000138 | z_loss: -0.377191 | e_loss: -0.000000
+  Epoch  1270/10000 | v_loss: 0.000139 | z_loss: -0.379839 | e_loss: -0.000000
+  Epoch  1280/10000 | v_loss: 0.000138 | z_loss: -0.366469 | e_loss: -0.000000
+  Epoch  1290/10000 | v_loss: 0.000138 | z_loss: -0.373333 | e_loss: -0.000000
+  Epoch  1300/10000 | v_loss: 0.000138 | z_loss: -0.367354 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_1300.pt
+  Epoch  1310/10000 | v_loss: 0.000138 | z_loss: -0.357656 | e_loss: -0.000000
+  Epoch  1320/10000 | v_loss: 0.000139 | z_loss: -0.363433 | e_loss: -0.000000
+  Epoch  1330/10000 | v_loss: 0.000137 | z_loss: -0.353234 | e_loss: -0.000000
+  Epoch  1340/10000 | v_loss: 0.000138 | z_loss: -0.352948 | e_loss: -0.000000
+  Epoch  1350/10000 | v_loss: 0.000138 | z_loss: -0.363550 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_1350.pt
+  Epoch  1360/10000 | v_loss: 0.000138 | z_loss: -0.347786 | e_loss: -0.000000
+  Epoch  1370/10000 | v_loss: 0.000138 | z_loss: -0.353442 | e_loss: -0.000000
+  Epoch  1380/10000 | v_loss: 0.000138 | z_loss: -0.336748 | e_loss: -0.000000
+  Epoch  1390/10000 | v_loss: 0.000138 | z_loss: -0.345805 | e_loss: -0.000000
+  Epoch  1400/10000 | v_loss: 0.000137 | z_loss: -0.335619 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_1400.pt
+  Epoch  1410/10000 | v_loss: 0.000138 | z_loss: -0.343599 | e_loss: -0.000000
+  Epoch  1420/10000 | v_loss: 0.000138 | z_loss: -0.343093 | e_loss: -0.000000
+  Epoch  1430/10000 | v_loss: 0.000138 | z_loss: -0.345050 | e_loss: -0.000000
+  Epoch  1440/10000 | v_loss: 0.000138 | z_loss: -0.337299 | e_loss: -0.000000
+  Epoch  1450/10000 | v_loss: 0.000138 | z_loss: -0.343278 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_1450.pt
+  Epoch  1460/10000 | v_loss: 0.000138 | z_loss: -0.342473 | e_loss: -0.000000
+  Epoch  1470/10000 | v_loss: 0.000138 | z_loss: -0.340587 | e_loss: -0.000000
+  Epoch  1480/10000 | v_loss: 0.000138 | z_loss: -0.334328 | e_loss: -0.000000
+  Epoch  1490/10000 | v_loss: 0.000138 | z_loss: -0.326945 | e_loss: -0.000000
+  Epoch  1500/10000 | v_loss: 0.000138 | z_loss: -0.335888 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_1500.pt
+  Epoch  1510/10000 | v_loss: 0.000139 | z_loss: -0.343084 | e_loss: -0.000000
+  Epoch  1520/10000 | v_loss: 0.000138 | z_loss: -0.333321 | e_loss: -0.000000
+  Epoch  1530/10000 | v_loss: 0.000138 | z_loss: -0.326915 | e_loss: -0.000000
+  Epoch  1540/10000 | v_loss: 0.000138 | z_loss: -0.331304 | e_loss: -0.000000
+  Epoch  1550/10000 | v_loss: 0.000139 | z_loss: -0.331349 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_1550.pt
+  Epoch  1560/10000 | v_loss: 0.000139 | z_loss: -0.332758 | e_loss: -0.000000
+  Epoch  1570/10000 | v_loss: 0.000139 | z_loss: -0.330054 | e_loss: -0.000000
+  Epoch  1580/10000 | v_loss: 0.000139 | z_loss: -0.328382 | e_loss: -0.000000
+  Epoch  1590/10000 | v_loss: 0.000139 | z_loss: -0.327154 | e_loss: -0.000000
+  Epoch  1600/10000 | v_loss: 0.000138 | z_loss: -0.321530 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_1600.pt
+  Epoch  1610/10000 | v_loss: 0.000139 | z_loss: -0.325982 | e_loss: -0.000000
+  Epoch  1620/10000 | v_loss: 0.000139 | z_loss: -0.327408 | e_loss: -0.000000
+  Epoch  1630/10000 | v_loss: 0.000140 | z_loss: -0.336197 | e_loss: -0.000000
+  Epoch  1640/10000 | v_loss: 0.000140 | z_loss: -0.331093 | e_loss: -0.000000
+  Epoch  1650/10000 | v_loss: 0.000139 | z_loss: -0.323499 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_1650.pt
+  Epoch  1660/10000 | v_loss: 0.000140 | z_loss: -0.332508 | e_loss: -0.000000
+  Epoch  1670/10000 | v_loss: 0.000140 | z_loss: -0.330741 | e_loss: -0.000000
+  Epoch  1680/10000 | v_loss: 0.000140 | z_loss: -0.323278 | e_loss: -0.000000
+  Epoch  1690/10000 | v_loss: 0.000140 | z_loss: -0.327728 | e_loss: -0.000000
+  Epoch  1700/10000 | v_loss: 0.000140 | z_loss: -0.320304 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_1700.pt
+  Epoch  1710/10000 | v_loss: 0.000141 | z_loss: -0.327632 | e_loss: -0.000000
+  Epoch  1720/10000 | v_loss: 0.000140 | z_loss: -0.313852 | e_loss: -0.000000
+  Epoch  1730/10000 | v_loss: 0.000141 | z_loss: -0.325374 | e_loss: -0.000000
+  Epoch  1740/10000 | v_loss: 0.000141 | z_loss: -0.323133 | e_loss: -0.000000
+  Epoch  1750/10000 | v_loss: 0.000141 | z_loss: -0.330619 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_1750.pt
+  Epoch  1760/10000 | v_loss: 0.000141 | z_loss: -0.323777 | e_loss: -0.000000
+  Epoch  1770/10000 | v_loss: 0.000140 | z_loss: -0.313300 | e_loss: -0.000000
+  Epoch  1780/10000 | v_loss: 0.000141 | z_loss: -0.321605 | e_loss: -0.000000
+  Epoch  1790/10000 | v_loss: 0.000141 | z_loss: -0.318601 | e_loss: -0.000000
+  Epoch  1800/10000 | v_loss: 0.000142 | z_loss: -0.325805 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_1800.pt
+  Epoch  1810/10000 | v_loss: 0.000142 | z_loss: -0.319887 | e_loss: -0.000000
+  Epoch  1820/10000 | v_loss: 0.000142 | z_loss: -0.324530 | e_loss: -0.000000
+  Epoch  1830/10000 | v_loss: 0.000142 | z_loss: -0.320439 | e_loss: -0.000000
+  Epoch  1840/10000 | v_loss: 0.000143 | z_loss: -0.326413 | e_loss: -0.000000
+  Epoch  1850/10000 | v_loss: 0.000142 | z_loss: -0.323254 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_1850.pt
+  Epoch  1860/10000 | v_loss: 0.000143 | z_loss: -0.324715 | e_loss: -0.000000
+  Epoch  1870/10000 | v_loss: 0.000142 | z_loss: -0.325553 | e_loss: -0.000000
+  Epoch  1880/10000 | v_loss: 0.000143 | z_loss: -0.324698 | e_loss: -0.000000
+  Epoch  1890/10000 | v_loss: 0.000142 | z_loss: -0.316787 | e_loss: -0.000000
+  Epoch  1900/10000 | v_loss: 0.000143 | z_loss: -0.324506 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_1900.pt
+  Epoch  1910/10000 | v_loss: 0.000143 | z_loss: -0.321331 | e_loss: -0.000000
+  Epoch  1920/10000 | v_loss: 0.000143 | z_loss: -0.317606 | e_loss: -0.000000
+  Epoch  1930/10000 | v_loss: 0.000144 | z_loss: -0.324108 | e_loss: -0.000000
+  Epoch  1940/10000 | v_loss: 0.000144 | z_loss: -0.320825 | e_loss: -0.000000
+  Epoch  1950/10000 | v_loss: 0.000143 | z_loss: -0.323042 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_1950.pt
+  Epoch  1960/10000 | v_loss: 0.000143 | z_loss: -0.313940 | e_loss: -0.000000
+  Epoch  1970/10000 | v_loss: 0.000143 | z_loss: -0.327187 | e_loss: -0.000000
+  Epoch  1980/10000 | v_loss: 0.000144 | z_loss: -0.327398 | e_loss: -0.000000
+  Epoch  1990/10000 | v_loss: 0.000143 | z_loss: -0.319457 | e_loss: -0.000000
+  Epoch  2000/10000 | v_loss: 0.000143 | z_loss: -0.317962 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_2000.pt
+  Epoch  2010/10000 | v_loss: 0.000144 | z_loss: -0.322654 | e_loss: -0.000000
+  Epoch  2020/10000 | v_loss: 0.000144 | z_loss: -0.319411 | e_loss: -0.000000
+  Epoch  2030/10000 | v_loss: 0.000144 | z_loss: -0.321082 | e_loss: -0.000000
+  Epoch  2040/10000 | v_loss: 0.000144 | z_loss: -0.327197 | e_loss: -0.000000
+  Epoch  2050/10000 | v_loss: 0.000145 | z_loss: -0.327592 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_2050.pt
+  Epoch  2060/10000 | v_loss: 0.000144 | z_loss: -0.317275 | e_loss: -0.000000
+  Epoch  2070/10000 | v_loss: 0.000144 | z_loss: -0.326827 | e_loss: -0.000000
+  Epoch  2080/10000 | v_loss: 0.000144 | z_loss: -0.320678 | e_loss: -0.000000
+  Epoch  2090/10000 | v_loss: 0.000144 | z_loss: -0.317365 | e_loss: -0.000000
+  Epoch  2100/10000 | v_loss: 0.000144 | z_loss: -0.318823 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_2100.pt
+  Epoch  2110/10000 | v_loss: 0.000144 | z_loss: -0.320656 | e_loss: -0.000000
+  Epoch  2120/10000 | v_loss: 0.000144 | z_loss: -0.315660 | e_loss: -0.000000
+  Epoch  2130/10000 | v_loss: 0.000144 | z_loss: -0.323191 | e_loss: -0.000000
+  Epoch  2140/10000 | v_loss: 0.000144 | z_loss: -0.318650 | e_loss: -0.000000
+  Epoch  2150/10000 | v_loss: 0.000144 | z_loss: -0.322217 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_2150.pt
+  Epoch  2160/10000 | v_loss: 0.000144 | z_loss: -0.317416 | e_loss: -0.000000
+  Epoch  2170/10000 | v_loss: 0.000145 | z_loss: -0.318566 | e_loss: -0.000000
+  Epoch  2180/10000 | v_loss: 0.000144 | z_loss: -0.312315 | e_loss: -0.000000
+  Epoch  2190/10000 | v_loss: 0.000144 | z_loss: -0.326393 | e_loss: -0.000000
+  Epoch  2200/10000 | v_loss: 0.000144 | z_loss: -0.320938 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_2200.pt
+  Epoch  2210/10000 | v_loss: 0.000145 | z_loss: -0.317370 | e_loss: -0.000000
+  Epoch  2220/10000 | v_loss: 0.000144 | z_loss: -0.317643 | e_loss: -0.000000
+  Epoch  2230/10000 | v_loss: 0.000145 | z_loss: -0.314181 | e_loss: -0.000000
+  Epoch  2240/10000 | v_loss: 0.000144 | z_loss: -0.318480 | e_loss: -0.000000
+  Epoch  2250/10000 | v_loss: 0.000145 | z_loss: -0.313817 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_2250.pt
+  Epoch  2260/10000 | v_loss: 0.000145 | z_loss: -0.317865 | e_loss: -0.000000
+  Epoch  2270/10000 | v_loss: 0.000145 | z_loss: -0.315089 | e_loss: -0.000000
+  Epoch  2280/10000 | v_loss: 0.000145 | z_loss: -0.315794 | e_loss: -0.000000
+  Epoch  2290/10000 | v_loss: 0.000144 | z_loss: -0.314108 | e_loss: -0.000000
+  Epoch  2300/10000 | v_loss: 0.000144 | z_loss: -0.317064 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_2300.pt
+  Epoch  2310/10000 | v_loss: 0.000144 | z_loss: -0.319658 | e_loss: -0.000000
+  Epoch  2320/10000 | v_loss: 0.000144 | z_loss: -0.317117 | e_loss: -0.000000
+  Epoch  2330/10000 | v_loss: 0.000144 | z_loss: -0.318001 | e_loss: -0.000000
+  Epoch  2340/10000 | v_loss: 0.000144 | z_loss: -0.315762 | e_loss: -0.000000
+  Epoch  2350/10000 | v_loss: 0.000143 | z_loss: -0.309773 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_2350.pt
+  Epoch  2360/10000 | v_loss: 0.000144 | z_loss: -0.316292 | e_loss: -0.000000
+  Epoch  2370/10000 | v_loss: 0.000145 | z_loss: -0.318919 | e_loss: -0.000000
+  Epoch  2380/10000 | v_loss: 0.000144 | z_loss: -0.324539 | e_loss: -0.000000
+  Epoch  2390/10000 | v_loss: 0.000143 | z_loss: -0.311918 | e_loss: -0.000000
+  Epoch  2400/10000 | v_loss: 0.000144 | z_loss: -0.318217 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_2400.pt
+  Epoch  2410/10000 | v_loss: 0.000144 | z_loss: -0.312899 | e_loss: -0.000000
+  Epoch  2420/10000 | v_loss: 0.000144 | z_loss: -0.309441 | e_loss: -0.000000
+  Epoch  2430/10000 | v_loss: 0.000143 | z_loss: -0.315582 | e_loss: -0.000000
+  Epoch  2440/10000 | v_loss: 0.000144 | z_loss: -0.322314 | e_loss: -0.000000
+  Epoch  2450/10000 | v_loss: 0.000144 | z_loss: -0.319807 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_2450.pt
+  Epoch  2460/10000 | v_loss: 0.000144 | z_loss: -0.313825 | e_loss: -0.000000
+  Epoch  2470/10000 | v_loss: 0.000144 | z_loss: -0.315074 | e_loss: -0.000000
+  Epoch  2480/10000 | v_loss: 0.000143 | z_loss: -0.314237 | e_loss: -0.000000
+  Epoch  2490/10000 | v_loss: 0.000143 | z_loss: -0.312011 | e_loss: -0.000000
+  Epoch  2500/10000 | v_loss: 0.000144 | z_loss: -0.318928 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_2500.pt
+  Epoch  2510/10000 | v_loss: 0.000143 | z_loss: -0.310924 | e_loss: -0.000000
+  Epoch  2520/10000 | v_loss: 0.000143 | z_loss: -0.317345 | e_loss: -0.000000
+  Epoch  2530/10000 | v_loss: 0.000143 | z_loss: -0.316467 | e_loss: -0.000000
+  Epoch  2540/10000 | v_loss: 0.000142 | z_loss: -0.312499 | e_loss: -0.000000
+  Epoch  2550/10000 | v_loss: 0.000143 | z_loss: -0.309580 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_2550.pt
+  Epoch  2560/10000 | v_loss: 0.000143 | z_loss: -0.308358 | e_loss: -0.000000
+  Epoch  2570/10000 | v_loss: 0.000142 | z_loss: -0.319999 | e_loss: -0.000000
+  Epoch  2580/10000 | v_loss: 0.000143 | z_loss: -0.305776 | e_loss: -0.000000
+  Epoch  2590/10000 | v_loss: 0.000142 | z_loss: -0.311465 | e_loss: -0.000000
+  Epoch  2600/10000 | v_loss: 0.000142 | z_loss: -0.304997 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_2600.pt
+======================================================================
+Run configuration
+  device        : cuda
+  batch_size    : 4096
+  model_name    : '0.04'
+  train         : True
+  load_if_exists: True (will attempt to load latest checkpoint)
+  epochs        : 10000
+  lr_v          : 0.0001
+  lr_z          : 0.0001
+  lr_z_explore  : 0.0001
+  n_critic_steps: 1
+  clip_grad_norm: 1
+  explore_std   : 1
+  explore_final : 0
+  anneal_epochs : 500
+  save_per      : 50
+  log_per       : 10
+======================================================================
+Loading exchange config from (saved) /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/exchange_cfg.json
+Loading pre-trained MarketMaker from /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model
+Loading market config from /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/market_cfg.json
+Market params:
+  A (lit, dark)      : [5000.0, 3000.0]
+  c (theta/sigma)    : [1.5, 1.5]
+  Gamma (lit, dark)  : [9.999999747378752e-05, 4.999999873689376e-05]
+  sigma              : 0.1
+  tick_size          : 0.04
+  half_tick          : 0.02
+  eps                : 1e-08
+======================================================================
+Loading market maker config from /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/market_maker_cfg.json
+Loading MM checkpoint: /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+MM trained for 80903 epochs
+MM parameters frozen
+======================================================================
+Exchange params:
+  eta                : 0.02
+  c_l                : 0.05
+  c_d                : 0.01
+  T                  : 1.0
+  N                  : 1000
+  actor_architecture : fc_time
+  actor_layers       : [2, 32, 32, 4]
+  critic_architecture: fc_time
+  critic_layers      : [2, 32, 32, 1]
+======================================================================
+Loading exchange checkpoint: /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_750.pt
+Resuming from epoch 751 (previously trained for 750 epochs, explore_std=0.0)
+======================================================================
+Saving configuration files...
+Configuration saved to /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model
+======================================================================
+Training
+Training epochs 751 -> 10750 (lr_v=0.0001, lr_z=0.0001, lr_z_explore=0.0001, B=4096)
+Explore std annealing: 0.0 -> 0 over 500 epochs (linear)
+  Epoch   760/10750 | v_loss: 0.000292 | z_loss: -0.789866 | e_loss: -0.000000
+  Epoch   770/10750 | v_loss: 0.000285 | z_loss: -0.769718 | e_loss: -0.000000
+  Epoch   780/10750 | v_loss: 0.000290 | z_loss: -0.766673 | e_loss: -0.000000
+  Epoch   790/10750 | v_loss: 0.000281 | z_loss: -0.763405 | e_loss: -0.000000
+  Epoch   800/10750 | v_loss: 0.000278 | z_loss: -0.753598 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_800.pt
+  Epoch   810/10750 | v_loss: 0.000273 | z_loss: -0.737810 | e_loss: -0.000000
+  Epoch   820/10750 | v_loss: 0.000270 | z_loss: -0.718254 | e_loss: -0.000000
+  Epoch   830/10750 | v_loss: 0.000262 | z_loss: -0.706124 | e_loss: -0.000000
+  Epoch   840/10750 | v_loss: 0.000249 | z_loss: -0.695663 | e_loss: -0.000000
+  Epoch   850/10750 | v_loss: 0.000242 | z_loss: -0.667175 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_850.pt
+  Epoch   860/10750 | v_loss: 0.000233 | z_loss: -0.656060 | e_loss: -0.000000
+  Epoch   870/10750 | v_loss: 0.000226 | z_loss: -0.629335 | e_loss: -0.000000
+  Epoch   880/10750 | v_loss: 0.000212 | z_loss: -0.608239 | e_loss: -0.000000
+  Epoch   890/10750 | v_loss: 0.000195 | z_loss: -0.606951 | e_loss: -0.000000
+  Epoch   900/10750 | v_loss: 0.000176 | z_loss: -0.574143 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_900.pt
+  Epoch   910/10750 | v_loss: 0.000156 | z_loss: -0.569210 | e_loss: -0.000000
+  Epoch   920/10750 | v_loss: 0.000142 | z_loss: -0.515079 | e_loss: -0.000000
+  Epoch   930/10750 | v_loss: 0.000134 | z_loss: -0.515629 | e_loss: -0.000000
+  Epoch   940/10750 | v_loss: 0.000130 | z_loss: -0.477597 | e_loss: -0.000000
+  Epoch   950/10750 | v_loss: 0.000128 | z_loss: -0.478154 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_950.pt
+  Epoch   960/10750 | v_loss: 0.000127 | z_loss: -0.461286 | e_loss: -0.000000
+  Epoch   970/10750 | v_loss: 0.000127 | z_loss: -0.451921 | e_loss: -0.000000
+======================================================================
+Run configuration
+  device        : cuda
+  batch_size    : 4096
+  model_name    : '0.04'
+  train         : True
+  load_if_exists: True (will attempt to load latest checkpoint)
+  epochs        : 10000
+  lr_v          : 1e-05
+  lr_z          : 1e-05
+  lr_z_explore  : 0.0001
+  n_critic_steps: 1
+  clip_grad_norm: 1
+  explore_std   : 1
+  explore_final : 0
+  anneal_epochs : 500
+  save_per      : 50
+  log_per       : 10
+======================================================================
+Loading exchange config from (saved) /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/exchange_cfg.json
+Loading pre-trained MarketMaker from /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model
+Loading market config from /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/market_cfg.json
+Market params:
+  A (lit, dark)      : [5000.0, 3000.0]
+  c (theta/sigma)    : [1.5, 1.5]
+  Gamma (lit, dark)  : [9.999999747378752e-05, 4.999999873689376e-05]
+  sigma              : 0.1
+  tick_size          : 0.04
+  half_tick          : 0.02
+  eps                : 1e-08
+======================================================================
+Loading market maker config from /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/market_maker_cfg.json
+Loading MM checkpoint: /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+MM trained for 80903 epochs
+MM parameters frozen
+======================================================================
+Exchange params:
+  eta                : 0.02
+  c_l                : 0.05
+  c_d                : 0.01
+  T                  : 1.0
+  N                  : 1000
+  actor_architecture : fc_time
+  actor_layers       : [2, 32, 32, 4]
+  critic_architecture: fc_time
+  critic_layers      : [2, 32, 32, 1]
+======================================================================
+Loading exchange checkpoint: /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_950.pt
+Resuming from epoch 951 (previously trained for 950 epochs, explore_std=0.0)
+======================================================================
+Saving configuration files...
+Configuration saved to /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model
+======================================================================
+Training
+Training epochs 951 -> 10950 (lr_v=1e-05, lr_z=1e-05, lr_z_explore=0.0001, B=4096)
+Explore std annealing: 0.0 -> 0 over 500 epochs (linear)
+  Epoch   960/10950 | v_loss: 0.000128 | z_loss: -0.489669 | e_loss: -0.000000
+  Epoch   970/10950 | v_loss: 0.000129 | z_loss: -0.473551 | e_loss: -0.000000
+======================================================================
+Run configuration
+  device        : cuda
+  batch_size    : 4096
+  model_name    : '0.04'
+  train         : True
+  load_if_exists: True (will attempt to load latest checkpoint)
+  epochs        : 10000
+  lr_v          : 1e-05
+  lr_z          : 1e-05
+  lr_z_explore  : 0.0001
+  n_critic_steps: 1
+  clip_grad_norm: 1
+  explore_std   : 1
+  explore_final : 0
+  anneal_epochs : 500
+  save_per      : 50
+  log_per       : 10
+======================================================================
+Loading exchange config from (saved) /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/exchange_cfg.json
+Loading pre-trained MarketMaker from /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model
+Loading market config from /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/market_cfg.json
+Market params:
+  A (lit, dark)      : [5000.0, 3000.0]
+  c (theta/sigma)    : [1.5, 1.5]
+  Gamma (lit, dark)  : [9.999999747378752e-05, 4.999999873689376e-05]
+  sigma              : 0.1
+  tick_size          : 0.04
+  half_tick          : 0.02
+  eps                : 1e-08
+======================================================================
+Loading market maker config from /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/market_maker_cfg.json
+Loading MM checkpoint: /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+MM trained for 80903 epochs
+MM parameters frozen
+======================================================================
+Exchange params:
+  eta                : 0.02
+  c_l                : 0.05
+  c_d                : 0.01
+  T                  : 1.0
+  N                  : 1000
+  actor_architecture : fc_time
+  actor_layers       : [2, 32, 32, 4]
+  critic_architecture: fc_time
+  critic_layers      : [2, 32, 32, 1]
+======================================================================
+Loading exchange checkpoint: /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_750.pt
+Resuming from epoch 751 (previously trained for 750 epochs, explore_std=0.0)
+======================================================================
+Saving configuration files...
+Configuration saved to /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model
+======================================================================
+Training
+Training epochs 751 -> 10750 (lr_v=1e-05, lr_z=1e-05, lr_z_explore=0.0001, B=4096)
+Explore std annealing: 0.0 -> 0 over 500 epochs (linear)
+  Epoch   760/10750 | v_loss: 0.000292 | z_loss: -0.779030 | e_loss: -0.000000
+  Epoch   770/10750 | v_loss: 0.000284 | z_loss: -0.778181 | e_loss: -0.000000
+  Epoch   780/10750 | v_loss: 0.000279 | z_loss: -0.780614 | e_loss: -0.000000
+  Epoch   790/10750 | v_loss: 0.000279 | z_loss: -0.754575 | e_loss: -0.000000
+  Epoch   800/10750 | v_loss: 0.000274 | z_loss: -0.761359 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_800.pt
+  Epoch   810/10750 | v_loss: 0.000274 | z_loss: -0.742527 | e_loss: -0.000000
+  Epoch   820/10750 | v_loss: 0.000268 | z_loss: -0.723570 | e_loss: -0.000000
+  Epoch   830/10750 | v_loss: 0.000260 | z_loss: -0.689642 | e_loss: -0.000000
+  Epoch   840/10750 | v_loss: 0.000255 | z_loss: -0.683505 | e_loss: -0.000000
+  Epoch   850/10750 | v_loss: 0.000248 | z_loss: -0.663590 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_850.pt
+  Epoch   860/10750 | v_loss: 0.000238 | z_loss: -0.639400 | e_loss: -0.000000
+  Epoch   870/10750 | v_loss: 0.000227 | z_loss: -0.632788 | e_loss: -0.000000
+  Epoch   880/10750 | v_loss: 0.000213 | z_loss: -0.613679 | e_loss: -0.000000
+  Epoch   890/10750 | v_loss: 0.000198 | z_loss: -0.596135 | e_loss: -0.000000
+  Epoch   900/10750 | v_loss: 0.000177 | z_loss: -0.587567 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_900.pt
+  Epoch   910/10750 | v_loss: 0.000158 | z_loss: -0.550971 | e_loss: -0.000000
+  Epoch   920/10750 | v_loss: 0.000142 | z_loss: -0.538336 | e_loss: -0.000000
+  Epoch   930/10750 | v_loss: 0.000134 | z_loss: -0.511633 | e_loss: -0.000000
+  Epoch   940/10750 | v_loss: 0.000129 | z_loss: -0.478864 | e_loss: -0.000000
+  Epoch   950/10750 | v_loss: 0.000128 | z_loss: -0.489360 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_950.pt
+  Epoch   960/10750 | v_loss: 0.000128 | z_loss: -0.471700 | e_loss: -0.000000
+  Epoch   970/10750 | v_loss: 0.000128 | z_loss: -0.466794 | e_loss: -0.000000
+  Epoch   980/10750 | v_loss: 0.000129 | z_loss: -0.465454 | e_loss: -0.000000
+  Epoch   990/10750 | v_loss: 0.000131 | z_loss: -0.475561 | e_loss: -0.000000
+  Epoch  1000/10750 | v_loss: 0.000132 | z_loss: -0.457608 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_1000.pt
+  Epoch  1010/10750 | v_loss: 0.000133 | z_loss: -0.459950 | e_loss: -0.000000
+  Epoch  1020/10750 | v_loss: 0.000132 | z_loss: -0.433618 | e_loss: -0.000000
+  Epoch  1030/10750 | v_loss: 0.000134 | z_loss: -0.452635 | e_loss: -0.000000
+  Epoch  1040/10750 | v_loss: 0.000134 | z_loss: -0.438617 | e_loss: -0.000000
+  Epoch  1050/10750 | v_loss: 0.000134 | z_loss: -0.416270 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_1050.pt
+  Epoch  1060/10750 | v_loss: 0.000135 | z_loss: -0.425551 | e_loss: -0.000000
+  Epoch  1070/10750 | v_loss: 0.000136 | z_loss: -0.435522 | e_loss: -0.000000
+  Epoch  1080/10750 | v_loss: 0.000136 | z_loss: -0.441771 | e_loss: -0.000000
+  Epoch  1090/10750 | v_loss: 0.000136 | z_loss: -0.430632 | e_loss: -0.000000
+  Epoch  1100/10750 | v_loss: 0.000137 | z_loss: -0.430540 | e_loss: -0.000000
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_1100.pt
+======================================================================
+Run configuration
+  device        : cuda
+  batch_size    : 4096
+  model_name    : '0.04'
+  train         : True
+  load_if_exists: True (will attempt to load latest checkpoint)
+  epochs        : 10000
+  lr_v          : 0.0001
+  lr_z          : 1e-05
+  lr_z_explore  : 0.0001
+  n_critic_steps: 1
+  clip_grad_norm: 1
+  explore_std   : 1
+  explore_final : 0
+  anneal_epochs : 500
+  save_per      : 50
+  log_per       : 10
+======================================================================
+Loading exchange config from (saved) /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/exchange_cfg.json
+Loading pre-trained MarketMaker from /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model
+Loading market config from /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/market_cfg.json
+Market params:
+  A (lit, dark)      : [5000.0, 3000.0]
+  c (theta/sigma)    : [1.5, 1.5]
+  Gamma (lit, dark)  : [9.999999747378752e-05, 4.999999873689376e-05]
+  sigma              : 0.1
+  tick_size          : 0.04
+  half_tick          : 0.02
+  eps                : 1e-08
+======================================================================
+Loading market maker config from /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/market_maker_cfg.json
+Loading MM checkpoint: /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+MM trained for 80903 epochs
+MM parameters frozen
+======================================================================
+Exchange params:
+  eta                : 0.02
+  c_l                : 0.05
+  c_d                : 0.01
+  T                  : 1.0
+  N                  : 1000
+  actor_architecture : fc_time
+  actor_layers       : [2, 32, 32, 4]
+  critic_architecture: fc_time
+  critic_layers      : [2, 32, 32, 1]
+======================================================================
+Loading exchange checkpoint: /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model/checkpoint_epoch_900.pt
+Resuming from epoch 901 (previously trained for 900 epochs, explore_std=0.0)
+======================================================================
+Saving configuration files...
+Configuration saved to /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/exchange/0.04_model
+======================================================================
+Training
+Training epochs 901 -> 10900 (lr_v=0.0001, lr_z=1e-05, lr_z_explore=0.0001, B=4096)
+Explore std annealing: 0.0 -> 0 over 500 epochs (linear)

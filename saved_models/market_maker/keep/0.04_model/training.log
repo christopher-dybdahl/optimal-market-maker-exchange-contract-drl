@@ -1,0 +1,286 @@
+======================================================================
+Run configuration
+  device        : cuda
+  batch_size    : 4096
+  model_name    : '0.04'
+  train         : True
+  load_if_exists: False (will start from scratch)
+  epochs        : 100000
+  lr            : 0.0001
+  save_per      : 10000
+  log_per       : 1000
+======================================================================
+Loading market config from (config/) /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/config/market_cfg.json
+Market params:
+  A (lit, dark)      : [5000.0, 3000.0]
+  c (theta/sigma)    : [1.5, 1.5]
+  Gamma (lit, dark)  : [9.999999747378752e-05, 4.999999873689376e-05]
+  sigma              : 0.1
+  tick_size          : 0.04
+  half_tick          : 0.02
+  eps                : 1e-08
+======================================================================
+Loading market maker config from (config/) /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/config/market_maker_cfg.json
+load_if_exists=False - starting from scratch
+======================================================================
+Saving configuration files...
+Configuration saved to /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model
+======================================================================
+Training
+Training epochs 1 -> 100000 (lr=0.0001, B=4096)
+  New best model (loss=-4320.450684) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-4348.432617) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-4427.037598) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-4480.442383) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-4486.651367) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-4493.082520) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-4497.082031) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-4530.280273) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-4572.747559) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-4609.161133) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-4625.848633) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-4712.258789) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-4715.548340) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-4727.535156) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-4750.325684) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-4867.158203) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-4880.130371) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-4887.739258) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-4933.929688) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-4940.258789) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-4995.923828) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5021.930664) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5060.083984) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5074.326172) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5115.054688) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5163.329102) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5170.739258) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5204.193848) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5216.222656) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5226.290039) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5232.687500) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5310.645508) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5323.475586) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5346.498047) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5346.841797) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5389.243652) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5477.333008) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5510.333984) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5532.975586) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5540.459961) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5596.155273) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5600.883301) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5681.868652) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5695.724609) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5800.781250) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5814.575195) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5819.302734) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5822.121094) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5866.208008) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5915.274414) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5946.164551) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5966.706543) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-5969.041992) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6009.636719) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6027.078613) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6054.741211) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6099.513672) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6233.492676) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6264.544922) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6323.293457) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6338.282715) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6346.275391) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6380.492676) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6413.250488) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6455.383789) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6478.134766) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6481.912109) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6579.250000) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6581.622070) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  Epoch   1000/100000 | loss: -6493.040039
+  New best model (loss=-6589.582031) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6604.532715) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6642.678223) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6686.399902) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6716.925781) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6726.819336) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6757.799805) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6773.381836) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6884.901367) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6906.583008) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6924.341797) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6929.378906) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-6931.047852) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7058.440918) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7146.097656) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7175.061523) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7212.312988) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7286.448242) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7317.392090) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7335.897949) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7341.867188) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7374.080078) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7392.342285) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7451.215820) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7472.429688) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7492.000000) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7492.274414) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7516.859375) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7525.346191) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7624.486328) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7655.405762) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7656.036621) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7707.710938) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7709.886230) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7722.510742) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7737.264648) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7787.850586) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7801.991211) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7826.605957) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7827.659180) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  Epoch   2000/100000 | loss: -7770.554688
+  New best model (loss=-7922.990234) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7951.810547) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7966.339844) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7967.060547) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-7991.614258) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-8069.443359) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-8078.235840) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-8097.995117) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-8109.958008) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-8180.605957) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  Epoch   3000/100000 | loss: -7920.897461
+  New best model (loss=-8192.319336) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-8222.542969) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-8226.630859) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  Epoch   4000/100000 | loss: -7979.274414
+  New best model (loss=-8237.519531) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-8270.875000) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-8278.248047) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  Epoch   5000/100000 | loss: -8202.607422
+  New best model (loss=-8304.801758) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  Epoch   6000/100000 | loss: -8109.985840
+  New best model (loss=-8376.664062) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-8384.173828) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  Epoch   7000/100000 | loss: -8069.088867
+  Epoch   8000/100000 | loss: -8178.350586
+  New best model (loss=-8415.724609) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  Epoch   9000/100000 | loss: -8105.317383
+  New best model (loss=-8444.961914) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  Epoch  10000/100000 | loss: -8185.616211
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/checkpoint_epoch_10000.pt
+  New best model (loss=-8445.362305) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  Epoch  11000/100000 | loss: -8334.824219
+  New best model (loss=-8449.559570) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-8504.186523) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  Epoch  12000/100000 | loss: -8325.912109
+  New best model (loss=-8513.472656) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  Epoch  13000/100000 | loss: -8336.473633
+  New best model (loss=-8523.414062) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-8560.154297) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  Epoch  14000/100000 | loss: -8226.599609
+  Epoch  15000/100000 | loss: -8374.339844
+  New best model (loss=-8570.666992) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  Epoch  16000/100000 | loss: -8398.246094
+  Epoch  17000/100000 | loss: -8446.657227
+  New best model (loss=-8577.143555) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  Epoch  18000/100000 | loss: -8282.341797
+  Epoch  19000/100000 | loss: -8327.461914
+  Epoch  20000/100000 | loss: -8314.561523
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/checkpoint_epoch_20000.pt
+  New best model (loss=-8585.085938) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  Epoch  21000/100000 | loss: -8336.904297
+  Epoch  22000/100000 | loss: -8263.016602
+  Epoch  23000/100000 | loss: -8415.971680
+  New best model (loss=-8604.279297) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  New best model (loss=-8662.937500) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  Epoch  24000/100000 | loss: -8328.455078
+  Epoch  25000/100000 | loss: -8316.013672
+  Epoch  26000/100000 | loss: -8401.305664
+  Epoch  27000/100000 | loss: -8271.821289
+  Epoch  28000/100000 | loss: -8378.404297
+  Epoch  29000/100000 | loss: -8480.400391
+  Epoch  30000/100000 | loss: -8317.740234
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/checkpoint_epoch_30000.pt
+  Epoch  31000/100000 | loss: -8219.740234
+  Epoch  32000/100000 | loss: -8436.437500
+  Epoch  33000/100000 | loss: -8335.907227
+  Epoch  34000/100000 | loss: -8351.320312
+  Epoch  35000/100000 | loss: -8259.651367
+  Epoch  36000/100000 | loss: -8259.082031
+  New best model (loss=-8663.489258) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  Epoch  37000/100000 | loss: -8605.197266
+  Epoch  38000/100000 | loss: -8432.221680
+  Epoch  39000/100000 | loss: -8204.869141
+  Epoch  40000/100000 | loss: -8295.027344
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/checkpoint_epoch_40000.pt
+  New best model (loss=-8695.248047) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  Epoch  41000/100000 | loss: -8291.496094
+  Epoch  42000/100000 | loss: -8311.996094
+  Epoch  43000/100000 | loss: -8392.306641
+  Epoch  44000/100000 | loss: -8363.453125
+  Epoch  45000/100000 | loss: -8410.339844
+  Epoch  46000/100000 | loss: -8230.291016
+  Epoch  47000/100000 | loss: -8293.861328
+  Epoch  48000/100000 | loss: -8385.577148
+  Epoch  49000/100000 | loss: -8410.640625
+  Epoch  50000/100000 | loss: -8247.485352
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/checkpoint_epoch_50000.pt
+  Epoch  51000/100000 | loss: -8327.740234
+  Epoch  52000/100000 | loss: -8395.675781
+  Epoch  53000/100000 | loss: -8351.077148
+  Epoch  54000/100000 | loss: -8316.699219
+  Epoch  55000/100000 | loss: -8380.265625
+  Epoch  56000/100000 | loss: -8444.760742
+  Epoch  57000/100000 | loss: -8298.167969
+  Epoch  58000/100000 | loss: -8554.484375
+  Epoch  59000/100000 | loss: -8295.067383
+  Epoch  60000/100000 | loss: -8321.071289
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/checkpoint_epoch_60000.pt
+  Epoch  61000/100000 | loss: -8212.490234
+  Epoch  62000/100000 | loss: -8287.466797
+  Epoch  63000/100000 | loss: -8411.343750
+  Epoch  64000/100000 | loss: -8327.718750
+  Epoch  65000/100000 | loss: -8414.375000
+  Epoch  66000/100000 | loss: -8344.924805
+  Epoch  67000/100000 | loss: -8396.462891
+  Epoch  68000/100000 | loss: -8367.214844
+  Epoch  69000/100000 | loss: -8387.494141
+  Epoch  70000/100000 | loss: -8357.156250
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/checkpoint_epoch_70000.pt
+  Epoch  71000/100000 | loss: -8378.724609
+  Epoch  72000/100000 | loss: -8307.132812
+  Epoch  73000/100000 | loss: -8325.041016
+  Epoch  74000/100000 | loss: -8318.949219
+  Epoch  75000/100000 | loss: -8460.911133
+  Epoch  76000/100000 | loss: -8401.121094
+  Epoch  77000/100000 | loss: -8325.483398
+  Epoch  78000/100000 | loss: -8464.353516
+  Epoch  79000/100000 | loss: -8333.834961
+  Epoch  80000/100000 | loss: -8391.216797
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/checkpoint_epoch_80000.pt
+  New best model (loss=-8708.562500) saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/best_model.pt
+  Epoch  81000/100000 | loss: -8245.384766
+  Epoch  82000/100000 | loss: -8252.527344
+  Epoch  83000/100000 | loss: -8490.746094
+  Epoch  84000/100000 | loss: -8309.030273
+  Epoch  85000/100000 | loss: -8354.015625
+  Epoch  86000/100000 | loss: -8352.027344
+  Epoch  87000/100000 | loss: -8191.864746
+  Epoch  88000/100000 | loss: -8342.874023
+  Epoch  89000/100000 | loss: -8343.780273
+  Epoch  90000/100000 | loss: -8337.542969
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/checkpoint_epoch_90000.pt
+  Epoch  91000/100000 | loss: -8266.846680
+  Epoch  92000/100000 | loss: -8389.105469
+  Epoch  93000/100000 | loss: -8502.198242
+  Epoch  94000/100000 | loss: -8313.936523
+  Epoch  95000/100000 | loss: -8338.586914
+  Epoch  96000/100000 | loss: -8425.924805
+  Epoch  97000/100000 | loss: -8421.894531
+  Epoch  98000/100000 | loss: -8294.838867
+  Epoch  99000/100000 | loss: -8423.546875
+  Epoch 100000/100000 | loss: -8384.364258
+  Checkpoint saved -> /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/checkpoint_epoch_100000.pt
+Training complete. Final epoch: 100000 | avg loss (last 1000 epochs): -8359.283062 | best loss: -8708.562500
+Loss plot saved to /content/drive/My Drive/GoogleColab/optimal-market-maker-exchange-contract-drl/saved_models/market_maker/0.04_model/loss.png

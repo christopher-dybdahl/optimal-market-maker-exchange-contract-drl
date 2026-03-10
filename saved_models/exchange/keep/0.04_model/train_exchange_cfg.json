@@ -1,0 +1,20 @@
+{
+    "device": "cuda",
+    "batch_size": 4096,
+    "model_name": null,
+    "verbose": true,
+    "train": false,
+    "load_if_exists": false,
+    "load_best_mm": true,
+    "epochs": 10000,
+    "lr_v": 0.0001,
+    "lr_z": 0.0001,
+    "lr_z_explore": 0.0001,
+    "n_critic_steps": 1,
+    "clip_grad_norm": 1,
+    "explore_std": 1,
+    "explore_std_final": 0,
+    "explore_anneal_epochs": 500,
+    "save_per": 50,
+    "log_per": 10
+}

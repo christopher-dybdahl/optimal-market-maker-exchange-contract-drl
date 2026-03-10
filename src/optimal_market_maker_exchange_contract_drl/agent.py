@@ -46,7 +46,7 @@ class MarketMaker(nn.Module):
         self.register_buffer(
             "_spread3",
             self.market.half_tick
-            * torch.tensor([1.0, 1.0, 0.0], dtype=dtype).view(1, 1, 3),
+            * torch.tensor([1.0, 1.0, 0.0], dtype=dtype, device=self.market.half_tick.device).view(1, 1, 3),
         )  # (1, 1, 3)  half_tick * phi_lat(kappa) per channel
 
         # Initialise neural network
@@ -65,6 +65,7 @@ class MarketMaker(nn.Module):
         epochs_trained: int,
         optimizer: torch.optim.Optimizer = None,
         losses: list[float] = None,
+        best_loss: float = None,
     ) -> None:
         ckpt = {
             "mm_state_dict": self.state_dict(),
@@ -74,19 +75,20 @@ class MarketMaker(nn.Module):
             if optimizer is not None
             else None,
             "losses": losses if losses is not None else [],
+            "best_loss": best_loss,
         }
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
         torch.save(ckpt, path)
 
     def load(
         self, path: str, device: torch.device
-    ) -> tuple[int, dict | None, list[float]]:
+    ) -> tuple[int, dict | None, list[float], float | None]:
         """
         Load model weights and training state from a checkpoint.
 
         Returns:
-            (epochs_trained, optimizer_state_dict, losses) — pass the latter two to
-            fit(..., optimizer_state=optimizer_state_dict, prior_losses=losses)
-            to resume training correctly.
+            (epochs_trained, optimizer_state_dict, losses, best_loss) — pass
+            these to fit() to resume training correctly.
         """
         ckpt = torch.load(path, map_location="cpu")
 
@@ -100,6 +102,7 @@ class MarketMaker(nn.Module):
             ckpt.get("epochs_trained", 0),
             ckpt.get("optimizer_state_dict", None),
             ckpt.get("losses", []),
+            ckpt.get("best_loss", None),
         )
 
     def _lam_eff_c(self, ell: torch.Tensor) -> torch.Tensor:
@@ -240,7 +243,8 @@ class MarketMaker(nn.Module):
         start_epoch: int = 1,
         optimizer_state: dict = None,
         prior_losses: list[float] = None,
-    ) -> list[float]:
+        best_loss: float = None,
+    ) -> tuple[list[float], float]:
         """
         Train the market maker policy network.
 
@@ -263,9 +267,11 @@ class MarketMaker(nn.Module):
             start_epoch:     global epoch index of the first epoch in this run
             optimizer_state: if provided, restore Adam state (e.g. momentum)
                              from a previous run before training begins
+            best_loss:       best loss seen so far (for resuming); None starts fresh
 
         Returns:
-            List of per-epoch loss values (length == epochs).
+            Tuple of (losses, best_loss) where losses is a list of per-epoch
+            loss values and best_loss is the best (lowest) loss seen.
         """
         if seed is not None:
             torch.manual_seed(seed)
@@ -279,6 +285,7 @@ class MarketMaker(nn.Module):
 
         final_epoch = start_epoch + epochs - 1
         losses: list[float] = list(prior_losses) if prior_losses else []
+        best_loss = best_loss if best_loss is not None else float("inf")
 
         def _log(msg: str) -> None:
             if logger is not None:
@@ -312,6 +319,20 @@ class MarketMaker(nn.Module):
             loss_val = float(loss.detach().cpu())
             losses.append(loss_val)
 
+            if save_dir is not None and loss_val < best_loss:
+                best_loss = loss_val
+                best_path = save_dir / "best_model.pt"
+                self.save(
+                    path=best_path,
+                    epochs_trained=epoch,
+                    optimizer=opt,
+                    losses=losses,
+                    best_loss=best_loss,
+                )
+                _log(f"  New best model (loss={best_loss:.6f}) saved -> {best_path}")
+            elif loss_val < best_loss:
+                best_loss = loss_val
+
             if epoch % log_per == 0 or epoch == final_epoch:
                 _log(
                     f"  Epoch {epoch:>{len(str(final_epoch))}}/{final_epoch} | loss: {loss_val:.6f}"
@@ -320,14 +341,16 @@ class MarketMaker(nn.Module):
             if save_dir is not None and (epoch % save_per == 0 or epoch == final_epoch):
                 ckpt_path = save_dir / f"checkpoint_epoch_{epoch}.pt"
                 self.save(
-                    path=ckpt_path, epochs_trained=epoch, optimizer=opt, losses=losses
+                    path=ckpt_path, epochs_trained=epoch, optimizer=opt, losses=losses,
+                    best_loss=best_loss,
                 )
                 _log(f"  Checkpoint saved -> {ckpt_path}")
 
         _log(
             f"Training complete. Final epoch: {final_epoch} | "
             f"avg loss (last {min(log_per, epochs)} epochs): "
-            f"{sum(losses[-min(log_per, epochs) :]) / min(log_per, epochs):.6f}"
+            f"{sum(losses[-min(log_per, epochs) :]) / min(log_per, epochs):.6f} | "
+            f"best loss: {best_loss:.6f}"
         )
 
-        return losses
+        return losses, best_loss
