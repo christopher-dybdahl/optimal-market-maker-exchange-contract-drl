@@ -4,6 +4,7 @@ import torch.nn as nn
 _ACTS = {
     "relu": nn.ReLU,
     "tanh": nn.Tanh,
+    "hardtanh": nn.Hardtanh,
     "elu": nn.ELU,
     "gelu": nn.GELU,
     "sigmoid": nn.Sigmoid,
@@ -14,6 +15,7 @@ _ACTS = {
 _GAINS = {
     "relu": nn.init.calculate_gain("relu"),
     "tanh": nn.init.calculate_gain("tanh"),
+    "hardtanh": nn.init.calculate_gain("tanh"),
     "elu": 1.0,  # ELU ≈ linear for x>0; gain ~1.0 is standard
     "gelu": 1.0,
     "sigmoid": nn.init.calculate_gain("sigmoid"),

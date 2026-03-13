@@ -42,6 +42,7 @@ def main():
     parser.add_argument("--lr_z_explore",  type=float, default=train_cfg["lr_z_explore"],  help="Learning rate for actor (exploration)")
     parser.add_argument("--n_critic_steps",type=int,   default=train_cfg["n_critic_steps"],help="Critic update steps per actor step")
     parser.add_argument("--clip_grad_norm",type=float, default=train_cfg["clip_grad_norm"],help="Max norm for gradient clipping (None to disable)")
+    parser.add_argument("--best_loss_after",type=int,  default=train_cfg["best_loss_after"],help="Start tracking best loss after this many epochs")
     parser.add_argument("--explore_std",              type=float, default=train_cfg["explore_std"],              help="Initial exploration perturbation std")
     parser.add_argument("--explore_std_final",       type=float, default=train_cfg["explore_std_final"],       help="Final exploration std after annealing (None to disable)")
     parser.add_argument("--explore_anneal_epochs",   type=int,   default=train_cfg["explore_anneal_epochs"],   help="Epochs over which to anneal std (None to disable)")
@@ -83,6 +84,7 @@ def main():
     logger.log(f"  lr_z_explore  : {args.lr_z_explore}")
     logger.log(f"  n_critic_steps: {args.n_critic_steps}")
     logger.log(f"  clip_grad_norm: {args.clip_grad_norm}")
+    logger.log(f"  best_loss_after: {args.best_loss_after}")
     logger.log(f"  explore_std   : {args.explore_std}")
     logger.log(f"  explore_final : {args.explore_std_final}")
     logger.log(f"  anneal_epochs : {args.explore_anneal_epochs}")
@@ -261,6 +263,7 @@ def main():
             lr_z_explore=args.lr_z_explore,
             n_critic_steps=args.n_critic_steps,
             clip_grad_norm=args.clip_grad_norm,
+            best_loss_after=args.best_loss_after,
             explore_std=explore_std,
             explore_std_final=args.explore_std_final,
             explore_anneal_epochs=args.explore_anneal_epochs,

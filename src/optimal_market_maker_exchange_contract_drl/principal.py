@@ -446,6 +446,7 @@ class Exchange(nn.Module):
         lr_z_explore: float,
         n_critic_steps: int = 5,
         clip_grad_norm: float = None,
+        best_loss_after: int = 0,
         explore_std: float = 1.0,
         explore_std_final: float = None,
         explore_anneal_epochs: int = None,
@@ -669,13 +670,14 @@ class Exchange(nn.Module):
                 advantage * (perturbation * z4_all).sum(dim=-1)
             ).mean()
 
-            opt_z_explore.zero_grad(set_to_none=True)
-            e_loss.backward()
+            opt_z.zero_grad(set_to_none=True)
+            e_loss_scaled = e_loss * (lr_z_explore / lr_z)
+            e_loss_scaled.backward()
             if clip_grad_norm is not None:
                 torch.nn.utils.clip_grad_norm_(
                     self.actor_nets.parameters(), max_norm=clip_grad_norm
                 )
-            opt_z_explore.step()
+            opt_z.step()
 
             # Unfreeze critic for next epoch
             self.critic_nets.requires_grad_(True)
@@ -688,20 +690,19 @@ class Exchange(nn.Module):
             losses["exploration"].append(e_loss.item())
 
             z_loss_val = losses["policy"][-1]
-            if save_dir is not None and z_loss_val < best_loss:
+            if epoch >= best_loss_after and z_loss_val < best_loss:
                 best_loss = z_loss_val
-                best_path = save_dir / "best_model.pt"
-                self.save(
-                    path=best_path,
-                    epochs_trained=epoch,
-                    optimizers=optimizers,
-                    losses=losses,
-                    best_loss=best_loss,
-                    explore_std=current_std,
-                )
-                _log(f"  New best model (z_loss={best_loss:.6f}) saved -> {best_path}")
-            elif z_loss_val < best_loss:
-                best_loss = z_loss_val
+                if save_dir is not None:
+                    best_path = save_dir / "best_model.pt"
+                    self.save(
+                        path=best_path,
+                        epochs_trained=epoch,
+                        optimizers=optimizers,
+                        losses=losses,
+                        best_loss=best_loss,
+                        explore_std=current_std,
+                    )
+                    _log(f"  New best model (z_loss={best_loss:.6f}) saved -> {best_path}")
 
             if epoch % log_per == 0 or epoch == final_epoch:
                 _log(
