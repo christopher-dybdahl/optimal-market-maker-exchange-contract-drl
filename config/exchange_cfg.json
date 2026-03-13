@@ -1,10 +1,10 @@
 {
-  "mm_model_dir": "saved_models/market_maker/keep/0.04_model",
+  "mm_model_dir": "saved_models/market_maker/keep/0.03_model",
   "eta": 0.02,
   "c_l": 0.05,
   "c_d": 0.01,
   "T": 1.0,
-  "N": 1000,
+  "N": 10,
   "actor_architecture": "fc_time",
   "actor_layers": [2, 20, 20, 4],
   "actor_activation": "elu",
@@ -12,5 +12,6 @@
   "critic_architecture": "fc_time",
   "critic_layers": [2, 20, 20, 1],
   "critic_activation": "elu",
-  "critic_output_activation": "affine"
+  "critic_output_activation": "affine",
+  "critic_scheme": "heun"
 }

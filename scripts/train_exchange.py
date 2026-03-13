@@ -38,7 +38,11 @@ def main():
     parser.add_argument("--load_best_mm", action="store_true", default=train_cfg["load_best_mm"], help="Load best MM checkpoint instead of latest")
     parser.add_argument("--epochs",        type=int,   default=train_cfg["epochs"],        help="Number of epochs to train")
     parser.add_argument("--lr_v",          type=float, default=train_cfg["lr_v"],          help="Learning rate for critic (value)")
+    parser.add_argument("--lr_v_final",              type=float, default=train_cfg["lr_v_final"],              help="Final critic LR after annealing (None to disable)")
+    parser.add_argument("--lr_v_anneal_epochs",      type=int,   default=train_cfg["lr_v_anneal_epochs"],      help="Epochs over which to anneal critic LR (None to disable)")
     parser.add_argument("--lr_z",          type=float, default=train_cfg["lr_z"],          help="Learning rate for actor (exploitation)")
+    parser.add_argument("--lr_z_final",              type=float, default=train_cfg["lr_z_final"],              help="Final actor-exploit LR after annealing (None to disable)")
+    parser.add_argument("--lr_z_anneal_epochs",      type=int,   default=train_cfg["lr_z_anneal_epochs"],      help="Epochs over which to anneal actor-exploit LR (None to disable)")
     parser.add_argument("--lr_z_explore",  type=float, default=train_cfg["lr_z_explore"],  help="Learning rate for actor (exploration)")
     parser.add_argument("--n_critic_steps",type=int,   default=train_cfg["n_critic_steps"],help="Critic update steps per actor step")
     parser.add_argument("--clip_grad_norm",type=float, default=train_cfg["clip_grad_norm"],help="Max norm for gradient clipping (None to disable)")
@@ -80,7 +84,11 @@ def main():
     logger.log(f"  load_if_exists: {args.load_if_exists} ({'will attempt to load latest checkpoint' if args.load_if_exists else 'will start from scratch'})")
     logger.log(f"  epochs        : {args.epochs}")
     logger.log(f"  lr_v          : {args.lr_v}")
+    logger.log(f"  lr_v_final    : {args.lr_v_final}")
+    logger.log(f"  lr_v_anneal   : {args.lr_v_anneal_epochs}")
     logger.log(f"  lr_z          : {args.lr_z}")
+    logger.log(f"  lr_z_final    : {args.lr_z_final}")
+    logger.log(f"  lr_z_anneal   : {args.lr_z_anneal_epochs}")
     logger.log(f"  lr_z_explore  : {args.lr_z_explore}")
     logger.log(f"  n_critic_steps: {args.n_critic_steps}")
     logger.log(f"  clip_grad_norm: {args.clip_grad_norm}")
@@ -264,6 +272,10 @@ def main():
             n_critic_steps=args.n_critic_steps,
             clip_grad_norm=args.clip_grad_norm,
             best_loss_after=args.best_loss_after,
+            lr_v_final=args.lr_v_final,
+            lr_v_anneal_epochs=args.lr_v_anneal_epochs,
+            lr_z_final=args.lr_z_final,
+            lr_z_anneal_epochs=args.lr_z_anneal_epochs,
             explore_std=explore_std,
             explore_std_final=args.explore_std_final,
             explore_anneal_epochs=args.explore_anneal_epochs,

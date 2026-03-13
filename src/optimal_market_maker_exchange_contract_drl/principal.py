@@ -57,6 +57,14 @@ class Exchange(nn.Module):
             * torch.tensor([1.0, 1.0, 0.0], dtype=dtype, device=self.market.half_tick.device).view(1, 1, 3),
         )
 
+        # Time-stepping scheme for critic targets: "euler" or "heun"
+        self.critic_scheme = exchange_cfg["critic_scheme"]
+        if self.critic_scheme not in ("euler", "heun"):
+            raise ValueError(
+                f"Unknown critic_scheme '{self.critic_scheme}'; "
+                "choose 'euler' or 'heun'"
+            )
+
         # Normalized time grid: t_norm[i] = i / N ∈ [0, 1) for fc_time input
         self.register_buffer(
             "_t_norm", torch.arange(self.N, dtype=dtype) / self.N
@@ -391,17 +399,25 @@ class Exchange(nn.Module):
         path: str,
         epochs_trained: int,
         optimizers: dict[str, torch.optim.Optimizer] = None,
+        schedulers: dict[str, torch.optim.lr_scheduler.LRScheduler | None] = None,
         losses: dict[str, list[float]] = None,
         best_loss: float = None,
         explore_std: float = None,
     ) -> None:
+        opt_states = (
+            {k: opt.state_dict() for k, opt in optimizers.items()}
+            if optimizers is not None
+            else None
+        )
+        if opt_states is not None and schedulers is not None:
+            for k, sched in schedulers.items():
+                if sched is not None:
+                    opt_states[k] = sched.state_dict()
         ckpt = {
             "exchange_state_dict": self.state_dict(),
             "epochs_trained": epochs_trained,
             "dtype": str(self.eta.dtype).replace("torch.", ""),
-            "optimizer_states": {k: opt.state_dict() for k, opt in optimizers.items()}
-            if optimizers is not None
-            else None,
+            "optimizer_states": opt_states,
             "losses": losses
             if losses is not None
             else {"value": [], "policy": [], "exploration": []},
@@ -447,6 +463,10 @@ class Exchange(nn.Module):
         n_critic_steps: int = 5,
         clip_grad_norm: float = None,
         best_loss_after: int = 0,
+        lr_v_final: float = None,
+        lr_v_anneal_epochs: int = None,
+        lr_z_final: float = None,
+        lr_z_anneal_epochs: int = None,
         explore_std: float = 1.0,
         explore_std_final: float = None,
         explore_anneal_epochs: int = None,
@@ -505,6 +525,38 @@ class Exchange(nn.Module):
 
         optimizers = {"opt_v": opt_v, "opt_z": opt_z, "opt_z_explore": opt_z_explore}
 
+        # --- LR schedulers: linear annealing for critic and actor-exploit ---
+        anneal_v = lr_v_final is not None and lr_v_anneal_epochs is not None
+        anneal_z = lr_z_final is not None and lr_z_anneal_epochs is not None
+
+        sched_v = (
+            torch.optim.lr_scheduler.LinearLR(
+                opt_v,
+                start_factor=1.0,
+                end_factor=lr_v_final / lr_v,
+                total_iters=lr_v_anneal_epochs,
+            )
+            if anneal_v
+            else None
+        )
+        sched_z = (
+            torch.optim.lr_scheduler.LinearLR(
+                opt_z,
+                start_factor=1.0,
+                end_factor=lr_z_final / lr_z,
+                total_iters=lr_z_anneal_epochs,
+            )
+            if anneal_z
+            else None
+        )
+        schedulers = {"sched_v": sched_v, "sched_z": sched_z}
+
+        if optimizer_states is not None:
+            if sched_v is not None and "sched_v" in optimizer_states:
+                sched_v.load_state_dict(optimizer_states["sched_v"])
+            if sched_z is not None and "sched_z" in optimizer_states:
+                sched_z.load_state_dict(optimizer_states["sched_z"])
+
         final_epoch = start_epoch + epochs - 1
         losses: dict[str, list[float]] = {
             "value": list(prior_losses.get("value", [])) if prior_losses else [],
@@ -540,6 +592,16 @@ class Exchange(nn.Module):
             )
         else:
             _log(f"Explore std: {explore_std} (constant)")
+        if anneal_v:
+            _log(
+                f"LR critic annealing: {lr_v} -> {lr_v_final} "
+                f"over {lr_v_anneal_epochs} epochs (linear)"
+            )
+        if anneal_z:
+            _log(
+                f"LR actor-exploit annealing: {lr_z} -> {lr_z_final} "
+                f"over {lr_z_anneal_epochs} epochs (linear)"
+            )
 
         N, B = self.N, self.B
         phi = self.market.phi.unsqueeze(-1)  # (1, 2, 1) — broadcasts to (N, B, 2, *)
@@ -578,7 +640,22 @@ class Exchange(nn.Module):
                 H_target = self._hamiltonian_all(
                     z_all, q, ell_all, v_q_next, v_shifted_next
                 )
-                targets = v_q_next + self.dt * H_target              # (N, B)
+
+                if self.critic_scheme == "heun":
+                    # Predictor: Euler estimate of v_i
+                    v_euler_q = v_q_next + self.dt * H_target            # (N, B)
+                    v_euler_shifted = (
+                        v_shifted_next + self.dt * H_target.unsqueeze(-1).unsqueeze(-1)
+                    )                                                    # (N, B, 2, 2)
+
+                    # Corrector: H evaluated at the Euler-predicted values
+                    H_corrector = self._hamiltonian_all(
+                        z_all, q, ell_all, v_euler_q, v_euler_shifted
+                    )
+                    targets = v_q_next + (self.dt / 2) * (H_target + H_corrector)
+                else:
+                    # Euler (default)
+                    targets = v_q_next + self.dt * H_target              # (N, B)
 
                 # Phase 2: Critic update
                 v_pred = self._value_all(q)                              # (N, B)
@@ -671,7 +748,8 @@ class Exchange(nn.Module):
             ).mean()
 
             opt_z.zero_grad(set_to_none=True)
-            e_loss_scaled = e_loss * (lr_z_explore / lr_z)
+            current_lr_z = opt_z.param_groups[0]["lr"]
+            e_loss_scaled = e_loss * (lr_z_explore / current_lr_z)
             e_loss_scaled.backward()
             if clip_grad_norm is not None:
                 torch.nn.utils.clip_grad_norm_(
@@ -681,6 +759,12 @@ class Exchange(nn.Module):
 
             # Unfreeze critic for next epoch
             self.critic_nets.requires_grad_(True)
+
+            # Step LR schedulers
+            if sched_v is not None:
+                sched_v.step()
+            if sched_z is not None:
+                sched_z.step()
 
             # ==============================================================
             # Logging / checkpointing
@@ -698,6 +782,7 @@ class Exchange(nn.Module):
                         path=best_path,
                         epochs_trained=epoch,
                         optimizers=optimizers,
+                        schedulers=schedulers,
                         losses=losses,
                         best_loss=best_loss,
                         explore_std=current_std,
@@ -720,6 +805,7 @@ class Exchange(nn.Module):
                     path=ckpt_path,
                     epochs_trained=epoch,
                     optimizers=optimizers,
+                    schedulers=schedulers,
                     losses=losses,
                     best_loss=best_loss,
                     explore_std=current_std,
