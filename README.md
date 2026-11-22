@@ -11,8 +11,8 @@ incentive payments, anticipating the market maker's best response.
 
 **Project report:**
 [Optimal Make–Take Contracts via Deep HJB Solvers (PDF)](https://christopher-dybdahl.github.io/assets/pdfs/market_maker_contracts.pdf)
-— Market Microstructure, Imperial College London, with T. Delforge and
-J. Jareño García.
+(Market Microstructure, Imperial College London, with T. Delforge and
+J. Jareño García).
 
 ## Method
 
@@ -22,7 +22,7 @@ The nested stochastic control problem is solved in two neural stages:
    maps incentive `z` and inventory `q` to quotes, trained to maximise the
    continuous-time Hamiltonian pointwise.
 2. **Exchange HJB** (`src/.../principal.py`): the principal's value function
-   is solved backward in time with an actor–critic scheme per time step — the
+   is solved backward in time with an actor–critic scheme per time step: the
    critic approximates the value function, the actor outputs the incentive
    schedule, and the critic target is advanced with a Heun
    predictor–corrector step. A stochastic exploration loss stabilises the
